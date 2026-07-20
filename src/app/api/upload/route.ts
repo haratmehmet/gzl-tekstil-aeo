@@ -1,12 +1,5 @@
 import { NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
-
-// Cloudinary configuration (will be populated from env vars)
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import { put } from '@vercel/blob';
 
 export async function POST(request: Request) {
   try {
@@ -17,23 +10,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Dosya bulunamadı' }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    // Dosyayı Vercel Blob'a yükle (public erişilebilir şekilde)
+    // token env var BLOB_READ_WRITE_TOKEN'dan otomatik olarak alınır.
+    const blob = await put(`gzlaeo-uploads/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '')}`, file, {
+      access: 'public',
+    });
 
-    // Upload to Cloudinary using a stream
-    const uploadResult = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        { folder: 'gzlaeo-uploads' },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      );
-      
-      uploadStream.end(buffer);
-    }) as any;
-
-    return NextResponse.json({ success: true, url: uploadResult.secure_url });
+    // Vercel Blob bize doğrudan güvenli bir URL döner.
+    return NextResponse.json({ success: true, url: blob.url });
   } catch (error: any) {
     console.error('Upload error:', error);
     return NextResponse.json({ success: false, error: error.message || 'Yükleme başarısız' }, { status: 500 });

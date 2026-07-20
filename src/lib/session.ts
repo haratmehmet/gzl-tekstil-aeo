@@ -1,14 +1,19 @@
 import { cookies } from "next/headers"
 import prisma from "./prisma"
+import crypto from "crypto"
 
 // Creates a session in DB and sets the HttpOnly cookie
 export async function createSession(userId: string) {
   // Session expires in 7 days
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
 
+  // Benzersiz ve tahmin edilemez (Cryptographically Secure) token üretimi: 256-bit entropy
+  const sessionToken = crypto.randomBytes(32).toString("hex")
+
   // 1. Create a session in the database
   const session = await prisma.session.create({
     data: {
+      id: sessionToken,
       userId,
       expiresAt,
     },

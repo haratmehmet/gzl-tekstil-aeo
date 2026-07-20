@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const session = request.cookies.get('session')
   const isAuthPage = request.nextUrl.pathname.startsWith('/login')
 
