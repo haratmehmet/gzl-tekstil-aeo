@@ -17,13 +17,24 @@ export function KumasDeposuForm({ record: initialRecord, onClose }: KumasDeposuF
   const { updateRecord, deleteRecord, addEmptyRecord } = useKumasDeposu()
   const [formData, setFormData] = useState<KumasDeposuRecord>(initialRecord)
 
+  const parseMetraj = (val: string) => {
+    if (!val) return 0;
+    let clean = val.replace(/[^0-9.,-]/g, '');
+    if (clean.includes(',') && clean.includes('.')) {
+      clean = clean.replace(/\./g, '').replace(',', '.');
+    } else if (clean.includes(',')) {
+      clean = clean.replace(',', '.');
+    }
+    return parseFloat(clean) || 0;
+  }
+
   const handleChange = (field: keyof KumasDeposuRecord, value: string) => {
     const updated = { ...formData, [field]: value }
 
     // Auto calculate net metraj if harcananMetraj changed
     if (field === "harcananMetraj" || field === "gelenMetraj") {
-      const gelen = parseFloat(updated.gelenMetraj.replace(',', '.').replace(/[^0-9.]/g, '')) || 0
-      const harcanan = parseFloat((updated.harcananMetraj || "").replace(',', '.').replace(/[^0-9.]/g, '')) || 0
+      const gelen = parseMetraj(updated.gelenMetraj)
+      const harcanan = parseMetraj(updated.harcananMetraj || "")
       const net = gelen - harcanan
       const isKg = updated.gelenMetraj.toLowerCase().includes("kg")
       updated.netMetraj = `${net.toFixed(2).replace('.', ',')} ${isKg ? "Kg" : "Mt"}`

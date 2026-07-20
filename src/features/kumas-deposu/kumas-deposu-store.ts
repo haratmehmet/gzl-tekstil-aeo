@@ -28,6 +28,17 @@ export function useKumasDeposu() {
     fetchRecords()
   }, [])
 
+  const parseMetraj = (val: string) => {
+    if (!val) return 0;
+    let clean = val.replace(/[^0-9.,-]/g, '');
+    if (clean.includes(',') && clean.includes('.')) {
+      clean = clean.replace(/\./g, '').replace(',', '.');
+    } else if (clean.includes(',')) {
+      clean = clean.replace(',', '.');
+    }
+    return parseFloat(clean) || 0;
+  }
+
   const updateRecord = async (id: string, updates: Partial<KumasDeposuRecord>) => {
     try {
       const existing = records.find(r => r.id === id)
@@ -38,8 +49,8 @@ export function useKumasDeposu() {
       
       // Auto calculate net metraj if harcananMetraj changed
       if (updates.harcananMetraj !== undefined) {
-        const gelen = parseFloat(newRecordState.gelenMetraj.replace(',', '.').replace(/[^0-9.]/g, '')) || 0
-        const harcanan = parseFloat(newRecordState.harcananMetraj.replace(',', '.').replace(/[^0-9.]/g, '')) || 0
+        const gelen = parseMetraj(newRecordState.gelenMetraj)
+        const harcanan = parseMetraj(newRecordState.harcananMetraj)
         const net = gelen - harcanan
         const isKg = newRecordState.gelenMetraj.toLowerCase().includes("kg")
         newRecordState.netMetraj = `${net.toFixed(2).replace('.', ',')} ${isKg ? "Kg" : "Mt"}`
