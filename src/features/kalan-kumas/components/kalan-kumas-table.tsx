@@ -273,8 +273,8 @@ export function KalanKumasTable() {
             <thead>
               <tr className="text-[10px] font-bold uppercase tracking-wider text-center border-b border-neutral-300">
                 <th className="bg-neutral-100 text-neutral-400 px-1 py-3 w-[3%] print:hidden"></th>
-                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[12%]">FATURA NO</th>
-                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[13%]">MALZEME KODU</th>
+                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[13%]">FATURA NO</th>
+                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[15%]">MALZEME KODU</th>
                 <th className="bg-orange-200/80 text-orange-900 border-r border-neutral-300 w-[9%]">
                   <button onClick={() => requestSort("faturaTarih")} className="w-full h-full px-1 py-3 flex items-center justify-center gap-1 hover:bg-orange-300/50 transition-colors">
                     FATURA TARİH
@@ -287,7 +287,7 @@ export function KalanKumasTable() {
                     <ArrowUpDown className="h-3 w-3 opacity-70" />
                   </button>
                 </th>
-                <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[18%]">KUMAŞ KODU</th>
+                <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[15%]">KUMAŞ KODU</th>
                 <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[9%]">KUMAŞ<br/>MT/KG</th>
                 <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[10%]">BİRİM FİYAT</th>
                 <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[14%]">TOPLAM TUTAR</th>
