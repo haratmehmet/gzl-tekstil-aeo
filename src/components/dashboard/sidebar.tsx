@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { logoutUser } from "@/features/auth/actions"
 import { cn } from "@/lib/utils"
 import {
   LayoutDashboard,
@@ -136,11 +137,12 @@ export function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
       {/* Logout button */}
       <div className="p-4 border-t border-neutral-100 bg-neutral-50/5">
         <button
-          onClick={() => {
+          onClick={async () => {
             if (typeof window !== "undefined") {
               localStorage.removeItem("isLoggedIn")
               localStorage.removeItem("userEmail")
             }
+            await logoutUser()
             window.location.href = "/login"
           }}
           className="flex items-center gap-3.5 w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200"
