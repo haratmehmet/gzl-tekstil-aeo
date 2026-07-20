@@ -273,24 +273,24 @@ export function KalanKumasTable() {
             <thead>
               <tr className="text-[10px] font-bold uppercase tracking-wider text-center border-b border-neutral-300">
                 <th className="bg-neutral-100 text-neutral-400 px-1 py-3 w-[3%] print:hidden"></th>
-                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[11%]">FATURA NO</th>
-                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[11%]">MALZEME KODU</th>
+                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[12%]">FATURA NO</th>
+                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[13%]">MALZEME KODU</th>
                 <th className="bg-orange-200/80 text-orange-900 border-r border-neutral-300 w-[9%]">
-                  <button onClick={() => requestSort("faturaTarih")} className="w-full h-full px-2 py-3 flex items-center justify-center gap-1 hover:bg-orange-300/50 transition-colors">
+                  <button onClick={() => requestSort("faturaTarih")} className="w-full h-full px-1 py-3 flex items-center justify-center gap-1 hover:bg-orange-300/50 transition-colors">
                     FATURA TARİH
                     <ArrowUpDown className="h-3 w-3 opacity-70" />
                   </button>
                 </th>
                 <th className="bg-sky-400 text-sky-950 border-r border-neutral-300 w-[9%]">
-                  <button onClick={() => requestSort("depoyaGirisTarihi")} className="w-full h-full px-2 py-3 flex items-center justify-center gap-1 hover:bg-sky-500/50 transition-colors">
+                  <button onClick={() => requestSort("depoyaGirisTarihi")} className="w-full h-full px-1 py-3 flex items-center justify-center gap-1 hover:bg-sky-500/50 transition-colors">
                     DEPOYA GİRİŞ<br/>TARİHİ
                     <ArrowUpDown className="h-3 w-3 opacity-70" />
                   </button>
                 </th>
-                <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[19%]">KUMAŞ KODU</th>
-                <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[10%]">KUMAŞ<br/>MT/KG</th>
+                <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[18%]">KUMAŞ KODU</th>
+                <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[9%]">KUMAŞ<br/>MT/KG</th>
                 <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[10%]">BİRİM FİYAT</th>
-                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[15%]">TOPLAM TUTAR</th>
+                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[14%]">TOPLAM TUTAR</th>
                 <th className="bg-neutral-100 text-neutral-400 px-2 py-3 w-[3%] print:hidden"></th>
               </tr>
             </thead>
@@ -307,14 +307,14 @@ export function KalanKumasTable() {
                     <input
                       value={r.faturaNo}
                       onChange={(e) => updateRecord(r.id, { faturaNo: e.target.value.toUpperCase() })}
-                      className="w-full h-8 px-2 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-neutral-700"
+                      className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-neutral-700 print:text-[10px]"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200">
                     <input
                       value={r.malzemeKodu}
                       onChange={(e) => updateRecord(r.id, { malzemeKodu: e.target.value.toUpperCase() })}
-                      className="w-full h-8 px-2 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-neutral-700"
+                      className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-neutral-700 print:text-[10px]"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200">
@@ -322,7 +322,7 @@ export function KalanKumasTable() {
                       type="date"
                       value={r.faturaTarih}
                       onChange={(e) => updateRecord(r.id, { faturaTarih: e.target.value })}
-                      className="w-full h-8 px-1 bg-transparent focus:outline-none focus:bg-white text-center text-neutral-700 print:text-[9px]"
+                      className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center text-neutral-700 print:text-[9px]"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200">
@@ -330,7 +330,7 @@ export function KalanKumasTable() {
                       type="date"
                       value={r.depoyaGirisTarihi}
                       onChange={(e) => updateRecord(r.id, { depoyaGirisTarihi: e.target.value })}
-                      className="w-full h-8 px-1 bg-transparent focus:outline-none focus:bg-white text-center text-neutral-700 print:text-[9px]"
+                      className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center text-neutral-700 print:text-[9px]"
                     />
                   </td>
 
@@ -338,7 +338,7 @@ export function KalanKumasTable() {
                     <input
                       value={r.kumasKodu}
                       onChange={(e) => updateRecord(r.id, { kumasKodu: e.target.value.toUpperCase() })}
-                      className="w-full h-8 px-2 bg-transparent focus:outline-none focus:bg-white text-center font-black text-sky-900"
+                      className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-black text-sky-900 print:text-[10px]"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200 bg-sky-50/30">
@@ -367,7 +367,7 @@ export function KalanKumasTable() {
                           updateRecord(r.id, { kumasMetraji: `${val} ${unit}` })
                         }
                       }}
-                      className="w-full h-8 px-2 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-sky-800"
+                      className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-sky-800 print:text-[10px]"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200">
@@ -377,7 +377,7 @@ export function KalanKumasTable() {
                       value={r.birimFiyat ?? ""}
                       onChange={(e) => updateRecord(r.id, { birimFiyat: e.target.value ? parseFloat(e.target.value) : "" })}
                       style={{ fontSize: "clamp(9px, 1.1vw, 14px)" }}
-                      className="w-full h-8 px-1 bg-transparent focus:outline-none focus:bg-white text-right font-bold text-neutral-700 tracking-tighter [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      className="w-full min-w-[30px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-right font-bold text-neutral-700 tracking-tighter print:text-[9px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200">
