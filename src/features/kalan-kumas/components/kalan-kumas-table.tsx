@@ -527,7 +527,6 @@ export function KalanKumasTable() {
                       className="w-full h-9 px-2 rounded-md border border-neutral-200 focus:outline-none text-sm text-neutral-700 font-bold"
                     />
                   </div>
-                </div>
                   <div className="space-y-1">
                     <Label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Kumaş Mt/Kg</Label>
                     <input
