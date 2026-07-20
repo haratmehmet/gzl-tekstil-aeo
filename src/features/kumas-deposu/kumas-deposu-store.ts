@@ -87,7 +87,7 @@ export function useKumasDeposu() {
     }
   }
 
-  const addEmptyRecord = async (parentId?: string) => {
+  const addEmptyRecord = async (parentId?: string, parentDataOverrides?: Partial<KumasDeposuRecord>) => {
     try {
       let baseRecord: Partial<KumasDeposuRecord> = {}
       
@@ -95,18 +95,19 @@ export function useKumasDeposu() {
       if (parentId) {
         const parent = records.find(r => r.id === parentId)
         if (parent) {
+          const actualParent = { ...parent, ...(parentDataOverrides || {}) }
           baseRecord = {
-            tarih: parent.kesimTarihi || parent.tarih, // KESİM TARİHİ YENİ TARİH OLARAK EKLENİR
-            renk: parent.renk,
-            firma: parent.firma,
-            sezon: parent.sezon,
-            kumasKodu: parent.kumasKodu,
-            baglananModel: parent.baglananModel, // BAĞLANAN MODEL ALT SATIRA AKTARILIR
+            tarih: actualParent.kesimTarihi || actualParent.tarih, // KESİM TARİHİ YENİ TARİH OLARAK EKLENİR
+            renk: actualParent.renk,
+            firma: actualParent.firma,
+            sezon: actualParent.sezon,
+            kumasKodu: actualParent.kumasKodu,
+            baglananModel: actualParent.baglananModel, // BAĞLANAN MODEL ALT SATIRA AKTARILIR
             // the new incoming is the parent's net amount
-            gelenMetraj: parent.netMetraj, 
-            netMetraj: parent.netMetraj,
-            parentId: parent.id,
-            takipFoyuId: parent.takipFoyuId
+            gelenMetraj: actualParent.netMetraj, 
+            netMetraj: actualParent.netMetraj,
+            parentId: actualParent.id,
+            takipFoyuId: actualParent.takipFoyuId
           }
         }
       }

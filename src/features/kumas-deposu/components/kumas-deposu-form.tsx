@@ -51,7 +51,7 @@ export function KumasDeposuForm({ record: initialRecord, onClose }: KumasDeposuF
     const isNowFilled = formData.harcananMetraj && parseMetraj(formData.harcananMetraj) > 0
 
     if (wasEmpty && isNowFilled) {
-      addEmptyRecord(formData.id)
+      addEmptyRecord(formData.id, formData)
     }
 
     onClose()
@@ -67,8 +67,8 @@ export function KumasDeposuForm({ record: initialRecord, onClose }: KumasDeposuF
   const handleAddSubRow = () => {
     // First save current changes
     updateRecord(formData.id, formData)
-    // Then add new empty record linked to this one
-    addEmptyRecord(formData.id)
+    // Then add new empty record linked to this one with latest form state overrides
+    addEmptyRecord(formData.id, formData)
     onClose()
   }
 
