@@ -39,8 +39,15 @@ export default function KumasTakipFoyuPage() {
   const { foyler, isLoaded: isCekmeLoaded, addFoy, updateFoy } = useCekmeStore()
   const [selectedSheet, setSelectedSheet] = React.useState<KumasTakipSheet | null>(null)
 
-  // Wait for load to avoid hydration issues
-  if (!isTakipLoaded || !isCekmeLoaded) return null
+  // Yükleme sırasında animasyon göster
+  if (!isTakipLoaded || !isCekmeLoaded) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[70vh] opacity-50">
+        <div className="h-8 w-8 border-4 border-neutral-200 border-t-neutral-800 rounded-full animate-spin mb-3"></div>
+        <p className="text-sm font-bold text-neutral-400">Föyler Yükleniyor...</p>
+      </div>
+    )
+  }
 
   // Delete sheet and clear selected if active
   const handleDeleteSheet = (id: string) => {

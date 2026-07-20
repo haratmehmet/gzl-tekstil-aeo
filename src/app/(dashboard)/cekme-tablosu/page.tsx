@@ -67,7 +67,15 @@ export default function CekmeTablosuPage() {
     }
   }, [activeFilter, availableFilters])
 
-  if (!isCekmeLoaded || !isTakipLoaded) return null
+  // Yükleme sırasında animasyon göster
+  if (!isCekmeLoaded || !isTakipLoaded) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[70vh] opacity-50">
+        <div className="h-8 w-8 border-4 border-neutral-200 border-t-neutral-800 rounded-full animate-spin mb-3"></div>
+        <p className="text-sm font-bold text-neutral-400">Veriler Yükleniyor...</p>
+      </div>
+    )
+  }
 
   const filteredFoyler = foyler.filter((f) => {
     if (!f.sezon) return false
