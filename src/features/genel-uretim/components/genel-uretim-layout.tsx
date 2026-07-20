@@ -11,6 +11,7 @@ export function GenelUretimLayout() {
   const [newSezonName, setNewSezonName] = React.useState("")
   const [activeTab, setActiveTab] = React.useState<"academia" | "beymen">("academia")
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(true)
 
   React.useEffect(() => {
     const savedTab = localStorage.getItem("genelUretimTab") as "academia" | "beymen"
@@ -19,15 +20,19 @@ export function GenelUretimLayout() {
   }, [])
 
   const loadSezonlar = async () => {
-    const res = await getUretimSezonlar()
-    if (res.success && res.data) {
-      setSezonlar(res.data)
-      const savedSezonId = localStorage.getItem("genelUretimSezonId")
-      if (savedSezonId && res.data.find(s => s.id === savedSezonId)) {
-        setActiveSezonId(savedSezonId)
-      } else if (res.data.length > 0 && !activeSezonId) {
-        setActiveSezonId(res.data[0].id)
+    try {
+      const res = await getUretimSezonlar()
+      if (res.success && res.data) {
+        setSezonlar(res.data)
+        const savedSezonId = localStorage.getItem("genelUretimSezonId")
+        if (savedSezonId && res.data.find(s => s.id === savedSezonId)) {
+          setActiveSezonId(savedSezonId)
+        } else if (res.data.length > 0 && !activeSezonId) {
+          setActiveSezonId(res.data[0].id)
+        }
       }
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -157,7 +162,12 @@ export function GenelUretimLayout() {
 
       {/* ALT KISIM (Full Ekran Tablo) */}
       <div className="flex-1 overflow-hidden relative">
-        {activeSezon ? (
+        {isLoading ? (
+          <div className="flex-1 flex flex-col items-center justify-center h-full text-center opacity-50">
+            <div className="h-6 w-6 border-2 border-neutral-300 border-t-neutral-800 rounded-full animate-spin mb-2"></div>
+            <p className="text-[11px] font-bold text-neutral-400">Yükleniyor...</p>
+          </div>
+        ) : activeSezon ? (
           <GenelUretimTable 
             key={`${activeSezon.id}-${activeTab}`}
             sezonId={activeSezon.id} 
