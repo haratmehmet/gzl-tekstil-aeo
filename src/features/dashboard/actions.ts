@@ -8,9 +8,9 @@ export async function getDashboardStats() {
     const totalTakipFoyu = await prisma.kumasTakip.count()
 
     // 2. Kumaş Deposu Toplam Mt (netMetraj is string, so we calculate in JS)
-    const deposuKayitlar = await prisma.kumasDeposu.findMany({ 
-      where: { parentId: null },
-      select: { netMetraj: true } 
+    // Sadece 'aktif' olan (kendisine bağlı alt satırı/çocuğu bulunmayan) kayıtların net metrajı toplanacak.
+    const deposuKayitlar = await prisma.kumasDeposu.findMany({
+      select: { id: true, parentId: true, netMetraj: true } 
     })
     
     const parseMetraj = (val: string) => {
@@ -26,7 +26,11 @@ export async function getDashboardStats() {
 
     let totalMt = 0
     for (const r of deposuKayitlar) {
-      totalMt += parseMetraj(r.netMetraj)
+      // Eğer bu kaydın id'sini parentId olarak kullanan başka bir kayıt YOKSA, bu kayıt aktiftir (pasif değildir).
+      const hasChild = deposuKayitlar.some(child => child.parentId === r.id)
+      if (!hasChild) {
+        totalMt += parseMetraj(r.netMetraj)
+      }
     }
 
     // 3. Aktif Sezonlar
