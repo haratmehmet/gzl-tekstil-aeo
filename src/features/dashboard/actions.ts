@@ -8,14 +8,25 @@ export async function getDashboardStats() {
     const totalTakipFoyu = await prisma.kumasTakip.count()
 
     // 2. Kumaş Deposu Toplam Mt (netMetraj is string, so we calculate in JS)
-    const deposuKayitlar = await prisma.kumasDeposu.findMany({ select: { netMetraj: true } })
+    const deposuKayitlar = await prisma.kumasDeposu.findMany({ 
+      where: { parentId: null },
+      select: { netMetraj: true } 
+    })
+    
+    const parseMetraj = (val: string) => {
+      if (!val) return 0;
+      let clean = val.replace(/[^0-9.,-]/g, '');
+      if (clean.includes(',') && clean.includes('.')) {
+        clean = clean.replace(/\./g, '').replace(',', '.');
+      } else if (clean.includes(',')) {
+        clean = clean.replace(',', '.');
+      }
+      return parseFloat(clean) || 0;
+    }
+
     let totalMt = 0
     for (const r of deposuKayitlar) {
-      const cleanVal = r.netMetraj.replace(/\s/g, '').replace(',', '.')
-      const parsed = parseFloat(cleanVal)
-      if (!isNaN(parsed)) {
-        totalMt += parsed
-      }
+      totalMt += parseMetraj(r.netMetraj)
     }
 
     // 3. Aktif Sezonlar
