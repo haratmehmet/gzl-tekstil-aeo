@@ -40,9 +40,11 @@ export async function loginUser(email: string, passwordAttempt: string) {
   }
 }
 
+import { redirect } from "next/navigation"
+
 export async function logoutUser() {
   await deleteSession()
-  return { success: true }
+  redirect("/login")
 }
 
 export async function getCurrentUser() {
