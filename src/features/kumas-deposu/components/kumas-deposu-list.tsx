@@ -82,13 +82,13 @@ export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
                 const orangeBg = isChild ? "bg-emerald-100/40" : "bg-orange-50/30";
                 const yellowBg = isChild ? "bg-emerald-200/60" : "bg-yellow-100/50";
                 
-                const passiveClass = hasChild ? "opacity-40 grayscale hover:opacity-100 hover:grayscale-0" : "";
+                const passiveClass = hasChild ? "opacity-30 grayscale" : "";
 
                 return (
                 <tr 
                   key={r.id} 
                   onClick={() => onEdit(r)}
-                  className={`hover:bg-neutral-100 transition-all duration-300 cursor-pointer group ${passiveClass}`}
+                  className={`hover:bg-neutral-100 transition-all duration-300 cursor-pointer group`}
                 >
                   {/* BLUE COLUMNS */}
                   <td className={`p-2 border border-neutral-300 ${blueBg} text-center`}>{r.tarih}</td>
@@ -106,7 +106,7 @@ export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
                   <td className={`p-2 border border-neutral-300 ${orangeBg} text-center`}>{r.aciklama}</td>
 
                   {/* YELLOW COLUMN */}
-                  <td className={`p-2 border border-neutral-300 ${yellowBg} text-center font-bold text-neutral-900`}>{r.netMetraj}</td>
+                  <td className={`p-2 border border-neutral-300 ${yellowBg} text-center font-bold text-neutral-900 transition-all duration-300 ${passiveClass}`}>{r.netMetraj}</td>
                 </tr>
                 );
               })}
@@ -128,13 +128,13 @@ export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
           {Array.isArray(records) && records.map((r) => {
             const isChild = !!r.parentId;
             const hasChild = Array.isArray(records) && records.some(child => child.parentId === r.id);
-            const passiveClass = hasChild ? "opacity-50 grayscale" : "";
+            const passiveClass = hasChild ? "opacity-30 grayscale" : "";
 
             return (
             <div 
               key={r.id} 
               onClick={() => onEdit(r)}
-              className={`${isChild ? "bg-emerald-50" : "bg-white"} border border-neutral-200 rounded-lg p-4 shadow-sm active:bg-neutral-50 transition-all ${passiveClass}`}
+              className={`${isChild ? "bg-emerald-50" : "bg-white"} border border-neutral-200 rounded-lg p-4 shadow-sm active:bg-neutral-50 transition-all`}
             >
               <div className="flex justify-between items-start mb-3 pb-3 border-b border-neutral-100">
                 <div>
@@ -167,7 +167,7 @@ export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
                 </div>
               </div>
 
-              <div className={`pt-3 border-t border-yellow-200 ${isChild ? "bg-emerald-200/50" : "bg-yellow-50/50"} -mx-4 -mb-4 p-4 rounded-b-lg flex justify-between items-center`}>
+              <div className={`pt-3 border-t border-yellow-200 ${isChild ? "bg-emerald-200/50" : "bg-yellow-50/50"} -mx-4 -mb-4 p-4 rounded-b-lg flex justify-between items-center transition-all duration-300 ${passiveClass}`}>
                 <span className="text-xs font-black text-yellow-900 uppercase">Net Kalan</span>
                 <span className="text-lg font-black text-neutral-900">{r.netMetraj}</span>
               </div>
