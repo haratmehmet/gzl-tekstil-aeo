@@ -105,7 +105,7 @@ export function DashboardWidgets({ initialData }: DashboardWidgetsProps) {
       {/* Main content grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Recent actions card */}
-        <Card className="col-span-2 border-neutral-200/80 bg-white shadow-sm shadow-neutral-100/30">
+        <Card className="md:col-span-2 border-neutral-200/80 bg-white shadow-sm shadow-neutral-100/30">
           <CardHeader>
             <CardTitle className="text-base font-bold text-neutral-800">
               Son İşlemler
