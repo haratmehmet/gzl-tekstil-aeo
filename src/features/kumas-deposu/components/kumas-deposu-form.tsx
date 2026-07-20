@@ -45,6 +45,15 @@ export function KumasDeposuForm({ record: initialRecord, onClose }: KumasDeposuF
 
   const handleSave = () => {
     updateRecord(formData.id, formData)
+
+    // Eğer daha önce harcanan metraj yoksa ve şimdi girildiyse, kalan net metrajı otomatik olarak yeni satıra (alta) devret
+    const wasEmpty = !initialRecord.harcananMetraj || parseFloat(initialRecord.harcananMetraj) === 0
+    const isNowFilled = formData.harcananMetraj && parseMetraj(formData.harcananMetraj) > 0
+
+    if (wasEmpty && isNowFilled) {
+      addEmptyRecord(formData.id)
+    }
+
     onClose()
   }
 

@@ -101,6 +101,7 @@ export function useKumasDeposu() {
             firma: parent.firma,
             sezon: parent.sezon,
             kumasKodu: parent.kumasKodu,
+            baglananModel: parent.baglananModel, // BAĞLANAN MODEL ALT SATIRA AKTARILIR
             // the new incoming is the parent's net amount
             gelenMetraj: parent.netMetraj, 
             netMetraj: parent.netMetraj,
