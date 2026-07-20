@@ -65,9 +65,14 @@ export function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
   const [logoUrl, setLogoUrl] = React.useState("/logo.png")
 
   React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      setUserRole(localStorage.getItem("userRole"))
-    }
+    import("@/features/auth/actions").then(({ getCurrentUser }) => {
+      getCurrentUser().then(res => {
+        if (res.success && res.user) {
+          setUserRole(res.user.role)
+        }
+      })
+    })
+
     getSystemSettings().then(res => {
       if (res.success && res.data) {
         if (res.data.companyName) setCompanyName(res.data.companyName)
