@@ -80,6 +80,7 @@ model KalanKumas {
   malzemeKodu       String
   faturaTarih       String
   depoyaGirisTarihi String
+  baglananModel     String?
   kumasKodu         String
   kumasMetraji      String
   birimFiyat        Float?

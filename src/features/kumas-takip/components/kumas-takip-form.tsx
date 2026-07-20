@@ -217,6 +217,7 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
         faturaTarih: "",
         birimFiyat: "",
         depoyaGirisTarihi: geldigiTarih,
+        baglananModel: baglandigiModel,
         kumasKodu,
         kumasMetraji: `${gelenMetraj.toFixed(2).replace('.', ',')} ${birim === "MT" ? "Mt" : "Kg"}`,
         takipFoyuId: sheetData.id

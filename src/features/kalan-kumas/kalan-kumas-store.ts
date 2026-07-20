@@ -7,6 +7,7 @@ export interface KalanKumasRecord {
   faturaTarih: string
   birimFiyat: number | ""
   depoyaGirisTarihi: string
+  baglananModel?: string
   kumasKodu: string
   kumasMetraji: string
   takipFoyuId?: string
@@ -28,6 +29,7 @@ export async function syncKumasToKalanKumas(payload: Omit<KalanKumasRecord, "id"
           body: JSON.stringify({
             ...existing,
             depoyaGirisTarihi: payload.depoyaGirisTarihi || existing.depoyaGirisTarihi,
+            baglananModel: payload.baglananModel || existing.baglananModel,
             kumasKodu: payload.kumasKodu || existing.kumasKodu,
             kumasMetraji: payload.kumasMetraji || existing.kumasMetraji,
           })
@@ -105,6 +107,7 @@ export function useKalanKumas() {
         faturaTarih: "",
         birimFiyat: null,
         depoyaGirisTarihi: "",
+        baglananModel: "",
         kumasKodu: "",
         kumasMetraji: "",
       }
@@ -141,6 +144,7 @@ export function useKalanKumas() {
             faturaTarih: "",
             birimFiyat: null,
             depoyaGirisTarihi: sheet.geldigiTarih || "",
+            baglananModel: sheet.baglandigiModel || "",
             kumasKodu: sheet.kumasKodu || "",
             kumasMetraji: `${sheet.gelenMetraj} ${sheet.birim === 'KG' ? 'Kg' : 'Mt'}`,
             takipFoyuId: sheet.id,
