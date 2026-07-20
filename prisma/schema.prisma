@@ -1,0 +1,218 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model KumasTakip {
+  id               String   @id @default(uuid())
+  kumasKodu        String
+  gelenMetraj      Float
+  kumasciFirma     String
+  geldigiTarih     String
+  sezon            String
+  sapKodu          String?
+  baglandigiModel  String
+  etiket           String?
+  kullanildigiYer  String
+  topAdedi         Int
+  kumasIcerik      String?
+  kumasRenk        String?
+  urunDptRenk      String?
+  kumasEn          String?
+  cekmeEn          String?
+  cekmeBoy         String?
+  notlar           String?
+  birim            String   @default("MT")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  rolls            Roll[]
+}
+
+model Roll {
+  id                String     @id @default(uuid())
+  kumasTakipId      String
+  topUstundeYazanMt Float
+  cikanMt           Float?
+  eksikFazlaMetraj  Float
+
+  kumasTakip   KumasTakip @relation(fields: [kumasTakipId], references: [id], onDelete: Cascade)
+}
+
+model CekmeFoyu {
+  id                    String   @id @default(uuid())
+  testeGonderilmeTarihi String
+  modelist              String
+  etiket                String
+  modelKodu             String
+  sapKodu               String
+  kumasKodu             String
+  sezon                 String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  fabrics               CekmeFabric[]
+}
+
+model CekmeFabric {
+  id          String    @id @default(uuid())
+  cekmeFoyuId String
+  kullanildigiYer String
+  kumasIcerik     String
+  tedarikci       String
+  artikelAdi      String
+  urunDptRenk     String
+  gelenMetraj     String
+  kumasEn         String
+  enCekmeYuzde    String
+  boyCekmeYuzde   String
+
+  cekmeFoyu   CekmeFoyu @relation(fields: [cekmeFoyuId], references: [id], onDelete: Cascade)
+}
+
+model KalanKumas {
+  id                String   @id @default(uuid())
+  faturaNo          String
+  malzemeKodu       String
+  faturaTarih       String
+  depoyaGirisTarihi String
+  kumasKodu         String
+  kumasMetraji      String
+  birimFiyat        Float?
+  eklenmeTarihi     DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  takipFoyuId       String?
+  notlar            Json?
+}
+
+model KumasDeposu {
+  id                String   @id @default(uuid())
+  tarih             String
+  renk              String
+  firma             String
+  sezon             String
+  kumasKodu         String
+  gelenMetraj       String
+  kesimTarihi       String
+  baglananModel     String
+  kesilenAdet       String
+  aciklama          String
+  harcananMetraj    String
+  netMetraj         String
+  takipFoyuId       String?
+  parentId          String?  // For sub-rows referencing the original row if needed
+  
+  eklenmeTarihi     DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model KesimKontrolFoyu {
+  id             String   @id @default(uuid())
+  modelKodu      String
+  kesimTarihi    String
+  sezonMarka     String
+  sapKodu        String
+  notlar         String
+  kumaslar       Json?
+  bedenler       Json?
+  
+  eklenmeTarihi  DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model UretimTakipFoyu {
+  id                    String   @id @default(uuid())
+  modelKodu             String
+  sezon                 String
+  etiket                String
+  sapKodu               String
+  kumasKodu             String
+  kumasIcerik           String
+  kesimTarihi           String
+  dikimBaslangicTarihi  String
+  paketlemeTarihi       String
+  bedenler              Json?
+  kesilenMetraj         String
+  etiketBilgi           String
+  numara                String
+  barkodTalimat         String
+  fiyatSticker          String
+  kkDurumu              String
+  sevkDurumu            String
+  notKritik             String
+  
+  eklenmeTarihi         DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model UretimSezon {
+  id                 String             @id @default(uuid())
+  ad                 String
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  genelUretimKayitlar GenelUretimKayit[]
+}
+
+model GenelUretimKayit {
+  id               String   @id @default(uuid())
+  sezonId          String
+  sezon            UretimSezon @relation(fields: [sezonId], references: [id], onDelete: Cascade)
+  markaTipi        String   // "academia" | "beymen"
+  
+  siparisId        String
+  sapKodu          String
+  modelKodu        String
+  modelist         String
+  butceAdet        String
+  
+  kumasGelisTarihi String
+  cekmeTesti       String
+  fitKalibiGelis   String
+  fitDikildi       String
+  uretimPastali    String
+  kesimiTamamlandi String
+  kaliteKontrol    String
+  teslimTarihi     String
+  
+  satirRengi       String?  // null, "green", "red"
+  hucreRenkleri    String?  // JSON string
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("USER") // ADMIN, USER, SUPER_ADMIN
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions  Session[]
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model SystemSettings {
+  id           String   @id @default("global") // Sadece "global" id'li tek kayıt olacak
+  companyName  String   @default("GZL TEKSTİL")
+  logoUrl      String?
+  faviconUrl   String?
+  theme        String   @default("light")
+  primaryColor String?
+  systemStatus String   @default("AKTIF") // AKTIF, BAKIMDA, PASIF
+  updatedAt    DateTime @updatedAt
+}
