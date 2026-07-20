@@ -76,15 +76,19 @@ export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
             <tbody className="text-[11px] text-neutral-800 divide-y divide-neutral-200 whitespace-nowrap">
               {Array.isArray(records) && records.map((r, i) => {
                 const isChild = !!r.parentId;
+                const hasChild = Array.isArray(records) && records.some(child => child.parentId === r.id);
+                
                 const blueBg = isChild ? "bg-emerald-50" : "bg-sky-50/40";
                 const orangeBg = isChild ? "bg-emerald-100/40" : "bg-orange-50/30";
                 const yellowBg = isChild ? "bg-emerald-200/60" : "bg-yellow-100/50";
+                
+                const passiveClass = hasChild ? "opacity-40 grayscale hover:opacity-100 hover:grayscale-0" : "";
 
                 return (
                 <tr 
                   key={r.id} 
                   onClick={() => onEdit(r)}
-                  className="hover:bg-neutral-100 transition-colors group"
+                  className={`hover:bg-neutral-100 transition-all duration-300 cursor-pointer group ${passiveClass}`}
                 >
                   {/* BLUE COLUMNS */}
                   <td className={`p-2 border border-neutral-300 ${blueBg} text-center`}>{r.tarih}</td>
@@ -123,11 +127,14 @@ export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
         <div className="grid grid-cols-1 gap-3 p-3 md:hidden print:hidden">
           {Array.isArray(records) && records.map((r) => {
             const isChild = !!r.parentId;
+            const hasChild = Array.isArray(records) && records.some(child => child.parentId === r.id);
+            const passiveClass = hasChild ? "opacity-50 grayscale" : "";
+
             return (
             <div 
               key={r.id} 
               onClick={() => onEdit(r)}
-              className={`${isChild ? "bg-emerald-50" : "bg-white"} border border-neutral-200 rounded-lg p-4 shadow-sm active:bg-neutral-50`}
+              className={`${isChild ? "bg-emerald-50" : "bg-white"} border border-neutral-200 rounded-lg p-4 shadow-sm active:bg-neutral-50 transition-all ${passiveClass}`}
             >
               <div className="flex justify-between items-start mb-3 pb-3 border-b border-neutral-100">
                 <div>
