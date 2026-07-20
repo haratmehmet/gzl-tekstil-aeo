@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const records = await prisma.kalanKumas.findMany({
       orderBy: {
-        eklenmeTarihi: "desc",
+        depoyaGirisTarihi: "desc",
       },
     })
     return NextResponse.json(records)
