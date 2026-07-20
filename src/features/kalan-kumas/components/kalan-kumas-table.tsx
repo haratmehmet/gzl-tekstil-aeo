@@ -59,7 +59,7 @@ function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRow
       }}
       placeholder={displayVal}
       style={{ fontSize: "clamp(9px, 1.1vw, 14px)" }}
-      className="relative z-10 w-full h-8 pl-1 pr-4 bg-transparent focus:bg-white text-right font-black text-neutral-900 tracking-tighter"
+      className="relative z-10 w-full h-8 pl-1 pr-4 print:pr-2 bg-transparent focus:bg-white text-right font-black text-neutral-900 tracking-tighter"
     />
   )
 }
@@ -287,10 +287,10 @@ export function KalanKumasTable() {
                     <ArrowUpDown className="h-3 w-3 opacity-70" />
                   </button>
                 </th>
-                <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[23%]">KUMAŞ KODU</th>
+                <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[19%]">KUMAŞ KODU</th>
                 <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[10%]">KUMAŞ<br/>MT/KG</th>
                 <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[10%]">BİRİM FİYAT</th>
-                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[11%]">TOPLAM TUTAR</th>
+                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[15%]">TOPLAM TUTAR</th>
                 <th className="bg-neutral-100 text-neutral-400 px-2 py-3 w-[3%] print:hidden"></th>
               </tr>
             </thead>
