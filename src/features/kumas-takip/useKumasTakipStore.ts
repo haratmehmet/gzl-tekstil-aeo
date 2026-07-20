@@ -37,14 +37,9 @@ export function useKumasTakipStore() {
       if (!res.ok) throw new Error("Failed to save")
       
       const savedSheet = await res.json()
-
-      setSheets((prev) => {
-        if (exists) {
-          return prev.map((s) => (s.id === savedSheet.id ? savedSheet : s))
-        } else {
-          return [savedSheet, ...prev]
-        }
-      })
+      
+      // Kayıttan sonra sunucudan taze ve ilişkili tüm veriyi tekrar çek
+      await fetchSheets()
     } catch (error) {
       console.error("Save error:", error)
       alert("Kaydedilirken bir hata oluştu.")
@@ -58,7 +53,8 @@ export function useKumasTakipStore() {
       })
       if (!res.ok) throw new Error("Failed to delete")
       
-      setSheets((prev) => prev.filter((s) => s.id !== id))
+      // Silmeden sonra sunucudan taze veriyi çek
+      await fetchSheets()
     } catch (error) {
       console.error("Delete error:", error)
       alert("Silinirken bir hata oluştu.")

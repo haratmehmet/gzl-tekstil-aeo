@@ -28,3 +28,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Kayıt oluşturulamadı", details: error?.message }, { status: 500 })
   }
 }
+
+export const dynamic = 'force-dynamic';

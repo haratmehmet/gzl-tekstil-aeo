@@ -72,17 +72,14 @@ export function useKalanKumas() {
       const existing = records.find(r => r.id === id)
       if (!existing) return
 
-      // 1. Optimistic local update so typing is instant
-      const newRecordState = { ...existing, ...updates }
-      setRecords(prev => prev.map(r => r.id === id ? newRecordState : r))
-
-      // 2. Background server sync
-      fetch("/api/kalan-kumas", {
+      // Optimistic update kaldırıldı, taze veri çekilecek
+      await fetch("/api/kalan-kumas", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newRecordState),
-      }).catch(err => console.error("Background sync error:", err))
+        body: JSON.stringify({ ...existing, ...updates }),
+      })
       
+      await fetchRecords()
     } catch (error) {
       console.error("Update error:", error)
     }
@@ -94,7 +91,7 @@ export function useKalanKumas() {
         method: "DELETE"
       })
       if (!res.ok) throw new Error("Failed to delete")
-      setRecords(prev => prev.filter(r => r.id !== id))
+      await fetchRecords()
     } catch (error) {
       console.error("Delete error:", error)
     }
@@ -117,8 +114,7 @@ export function useKalanKumas() {
         body: JSON.stringify(newRecord)
       })
       if (!res.ok) throw new Error("Failed to add")
-      const saved = await res.json()
-      setRecords(prev => [...prev, saved])
+      await fetchRecords()
     } catch (error) {
       console.error("Add empty error:", error)
     }
@@ -146,8 +142,8 @@ export function useKalanKumas() {
             birimFiyat: null,
             depoyaGirisTarihi: sheet.geldigiTarih || "",
             kumasKodu: sheet.kumasKodu || "",
-            kumasMetraji: sheet.gelenMetraj ? `${Number(sheet.gelenMetraj).toFixed(2).replace('.', ',')} ${sheet.birim === "MT" ? "Mt" : "Kg"}` : "",
-            takipFoyuId: sheet.id
+            kumasMetraji: `${sheet.gelenMetraj} ${sheet.birim === 'KG' ? 'Kg' : 'Mt'}`,
+            takipFoyuId: sheet.id,
           })
         })
         addedCount++
@@ -157,8 +153,8 @@ export function useKalanKumas() {
         await fetchRecords()
       }
       return addedCount
-    } catch (e) {
-      console.error(e)
+    } catch (error) {
+      console.error("Sync past error:", error)
       return 0
     }
   }

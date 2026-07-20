@@ -30,8 +30,7 @@ export function useCekmeStore() {
         body: JSON.stringify(foy),
       })
       if (!res.ok) throw new Error("Failed to add")
-      const newFoy = await res.json()
-      setFoyler((prev) => [...prev, newFoy])
+      await fetchFoyler()
     } catch (error) {
       console.error("Add error:", error)
       alert("Kaydedilirken bir hata oluştu.")
@@ -46,8 +45,7 @@ export function useCekmeStore() {
         body: JSON.stringify(updatedFoy),
       })
       if (!res.ok) throw new Error("Failed to update")
-      const savedFoy = await res.json()
-      setFoyler((prev) => prev.map((f) => (f.id === id ? savedFoy : f)))
+      await fetchFoyler()
     } catch (error) {
       console.error("Update error:", error)
       alert("Güncellenirken bir hata oluştu.")
@@ -60,7 +58,7 @@ export function useCekmeStore() {
         method: "DELETE",
       })
       if (!res.ok) throw new Error("Failed to delete")
-      setFoyler((prev) => prev.filter((f) => f.id !== id))
+      await fetchFoyler()
     } catch (error) {
       console.error("Delete error:", error)
       alert("Silinirken bir hata oluştu.")
