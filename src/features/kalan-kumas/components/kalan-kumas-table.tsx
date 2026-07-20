@@ -287,8 +287,7 @@ export function KalanKumasTable() {
                     <ArrowUpDown className="h-3 w-3 opacity-70" />
                   </button>
                 </th>
-                <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[11%]">BAĞLANAN MODEL</th>
-                <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[12%]">KUMAŞ KODU</th>
+                <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[23%]">KUMAŞ KODU</th>
                 <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[10%]">KUMAŞ<br/>MT/KG</th>
                 <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[10%]">BİRİM FİYAT</th>
                 <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[11%]">TOPLAM TUTAR</th>
@@ -334,13 +333,7 @@ export function KalanKumasTable() {
                       className="w-full h-8 px-1 bg-transparent focus:outline-none focus:bg-white text-center text-neutral-700 print:text-[9px]"
                     />
                   </td>
-                  <td className="p-1 border-r border-neutral-200 bg-sky-50/30">
-                    <input
-                      value={r.baglananModel || ""}
-                      onChange={(e) => updateRecord(r.id, { baglananModel: e.target.value.toUpperCase() })}
-                      className="w-full h-8 px-2 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-sky-900"
-                    />
-                  </td>
+
                   <td className="p-1 border-r border-neutral-200 bg-sky-50/30">
                     <input
                       value={r.kumasKodu}
@@ -450,13 +443,12 @@ export function KalanKumasTable() {
                   <td className="border-r border-neutral-200"></td>
                   <td className="border-r border-neutral-200"></td>
                   <td className="border-r border-neutral-200"></td>
-                  <td className="border-r border-neutral-200"></td>
                   <td></td>
                 </tr>
               ))}
               {sortedRecords.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="text-center py-8 text-neutral-400">
+                  <td colSpan={10} className="text-center py-8 text-neutral-400">
                     Henüz kayıt bulunmuyor...
                   </td>
                 </tr>
@@ -473,7 +465,7 @@ export function KalanKumasTable() {
                 <td colSpan={2} className="border-t-2 border-neutral-300"></td>
               </tr>
               <tr>
-                <td colSpan={11} className="py-2 px-4 text-left font-medium text-neutral-500 text-[10px]">
+                <td colSpan={10} className="py-2 px-4 text-left font-medium text-neutral-500 text-[10px]">
                   Toplam tutara faturası olmayan kumaşlar dahil değildir.
                 </td>
               </tr>
@@ -519,14 +511,7 @@ export function KalanKumasTable() {
                       className="w-full h-9 px-2 rounded-md border border-neutral-200 focus:outline-none text-sm text-neutral-700"
                     />
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Bağlanan Model</Label>
-                    <input
-                      value={r.baglananModel || ""}
-                      onChange={(e) => updateRecord(r.id, { baglananModel: e.target.value.toUpperCase() })}
-                      className="w-full h-9 px-2 rounded-md border border-neutral-200 focus:outline-none text-sm text-neutral-700 font-bold"
-                    />
-                  </div>
+
                   <div className="space-y-1">
                     <Label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Kumaş Mt/Kg</Label>
                     <input
