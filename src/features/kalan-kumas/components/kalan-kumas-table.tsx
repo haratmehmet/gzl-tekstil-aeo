@@ -269,7 +269,7 @@ export function KalanKumasTable() {
           </div>
         </div>
         <div className="hidden lg:block print:block w-full">
-          <table className="w-full text-left border-collapse select-none table-fixed">
+          <table className="w-full text-left border-collapse select-none table-fixed print:table-auto">
             <thead>
               <tr className="text-[10px] font-bold uppercase tracking-wider text-center border-b border-neutral-300">
                 <th className="bg-neutral-100 text-neutral-400 px-1 py-3 w-[3%] print:hidden"></th>
@@ -456,13 +456,14 @@ export function KalanKumasTable() {
             </tbody>
             <tfoot>
               <tr>
-                <td colSpan={8} className="border-t-2 border-neutral-300 py-3 px-4 text-right font-black text-red-600 uppercase" style={{ fontSize: "clamp(10px, 1.2vw, 14px)" }}>
+                <td className="border-t-2 border-neutral-300 print:hidden"></td>
+                <td colSpan={7} className="border-t-2 border-neutral-300 py-3 px-4 text-right font-black text-red-600 uppercase" style={{ fontSize: "clamp(10px, 1.2vw, 14px)" }}>
                   TOPLAM TUTAR (KDV HARİÇ)
                 </td>
                 <td className="border-t-2 border-l border-neutral-300 bg-neutral-50 py-3 pr-2 text-right font-black text-neutral-900" style={{ fontSize: "clamp(10px, 1.2vw, 14px)" }}>
                   {formatMoney(getGrandTotal())}
                 </td>
-                <td colSpan={2} className="border-t-2 border-neutral-300"></td>
+                <td className="border-t-2 border-neutral-300 print:hidden"></td>
               </tr>
               <tr>
                 <td colSpan={10} className="py-2 px-4 text-left font-medium text-neutral-500 text-[10px]">
