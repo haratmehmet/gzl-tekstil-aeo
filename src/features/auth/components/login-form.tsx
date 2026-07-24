@@ -17,7 +17,9 @@ export function LoginForm() {
   const [error, setError] = React.useState("")
 
   const [companyName, setCompanyName] = React.useState("GZL TEKSTİL")
-  const [logoUrl, setLogoUrl] = React.useState("/logo.png")
+  const [logoUrl, setLogoUrl] = React.useState<string | null>(null)
+  const [isSettingsLoaded, setIsSettingsLoaded] = React.useState(false)
+  const [isImageLoaded, setIsImageLoaded] = React.useState(false)
 
   React.useEffect(() => {
     import("@/features/ayarlar/actions").then(({ getSystemSettings }) => {
@@ -26,6 +28,7 @@ export function LoginForm() {
           if (res.data.companyName) setCompanyName(res.data.companyName)
           if (res.data.logoUrl) setLogoUrl(res.data.logoUrl)
         }
+        setIsSettingsLoaded(true)
       })
     })
   }, [])
@@ -39,14 +42,12 @@ export function LoginForm() {
       if (!email || !password) {
         throw new Error("Lütfen tüm alanları doldurun.")
       }
-
+      
       const res = await loginUser(email, password)
       
       if (!res.success) {
-        throw new Error(res.error)
+        throw new Error(res.error || "Giriş başarısız.")
       }
-      
-      // Cookie is already set by the server action
       
       if (res.user?.role === "SUPER_ADMIN") {
         router.push("/ayarlar")
@@ -63,12 +64,28 @@ export function LoginForm() {
     <Card className="w-full max-w-md border border-white/40 bg-white/40 backdrop-blur-xl shadow-2xl shadow-neutral-200/30 overflow-hidden rounded-3xl p-6 sm:p-8 select-none">
       {/* Brand logo header */}
       <div className="flex flex-col items-center space-y-4 mb-6">
-        <div className="flex items-center justify-center p-3 bg-white/70 backdrop-blur-md rounded-2xl shadow-sm border border-white/50">
-          <img
-            src={logoUrl}
-            alt="Logo"
-            className="w-48 h-auto object-contain"
-          />
+        <div className="flex items-center justify-center p-3 bg-white/70 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 min-h-[80px] min-w-[150px]">
+          {isSettingsLoaded ? (
+            logoUrl ? (
+              <div className="relative">
+                {!isImageLoaded && (
+                  <div className="absolute inset-0 bg-neutral-200 animate-pulse rounded-lg" />
+                )}
+                <img
+                  src={logoUrl}
+                  alt=""
+                  onLoad={() => setIsImageLoaded(true)}
+                  className={`w-48 h-auto object-contain transition-opacity duration-300 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                />
+              </div>
+            ) : (
+              <div className="w-20 h-20 bg-sky-100 text-sky-600 flex items-center justify-center font-black rounded-xl select-none text-4xl">
+                {companyName.substring(0, 1)}
+              </div>
+            )
+          ) : (
+            <div className="w-48 h-16 bg-neutral-200 animate-pulse rounded-lg" />
+          )}
         </div>
         <div className="space-y-1 text-center">
           <h2 className="text-xl font-bold tracking-tight text-neutral-800">
