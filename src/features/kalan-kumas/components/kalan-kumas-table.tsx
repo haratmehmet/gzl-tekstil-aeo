@@ -285,13 +285,13 @@ export function KalanKumasTable() {
                 <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[13%]">FATURA NO</th>
                 <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[15%]">MALZEME KODU</th>
                 <th className="bg-orange-200/80 text-orange-900 border-r border-neutral-300 w-[9%]">
-                  <button onClick={() => requestSort("faturaTarih")} className="w-full h-full px-1 py-3 flex items-center justify-center gap-1 hover:bg-orange-300/50 transition-colors">
+                  <button onClick={() => requestSort("faturaTarih")} className="allow-viewer w-full h-full px-1 py-3 flex items-center justify-center gap-1 hover:bg-orange-300/50 transition-colors">
                     FATURA TARİH
                     <ArrowUpDown className="h-3 w-3 opacity-70" />
                   </button>
                 </th>
                 <th className="bg-sky-400 text-sky-950 border-r border-neutral-300 w-[9%]">
-                  <button onClick={() => requestSort("depoyaGirisTarihi")} className="w-full h-full px-1 py-3 flex items-center justify-center gap-1 hover:bg-sky-500/50 transition-colors">
+                  <button onClick={() => requestSort("depoyaGirisTarihi")} className="allow-viewer w-full h-full px-1 py-3 flex items-center justify-center gap-1 hover:bg-sky-500/50 transition-colors">
                     DEPOYA GİRİŞ<br/>TARİHİ
                     <ArrowUpDown className="h-3 w-3 opacity-70" />
                   </button>
