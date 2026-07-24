@@ -109,6 +109,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     } else {
       document.body.classList.remove('viewer-mode');
     }
+    
+    // Cleanup on unmount (e.g. when logging out and going to /login)
+    return () => {
+      document.body.classList.remove('viewer-mode');
+    };
   }, [userRole]);
 
   React.useEffect(() => {
