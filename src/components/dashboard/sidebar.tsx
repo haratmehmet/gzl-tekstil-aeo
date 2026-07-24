@@ -62,7 +62,8 @@ export function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
   const pathname = usePathname()
   const [userRole, setUserRole] = React.useState<string | null>(null)
   const [companyName, setCompanyName] = React.useState("GZL TEKSTİL")
-  const [logoUrl, setLogoUrl] = React.useState("/logo.png")
+  const [logoUrl, setLogoUrl] = React.useState<string | null>(null)
+  const [isSettingsLoaded, setIsSettingsLoaded] = React.useState(false)
 
   React.useEffect(() => {
     import("@/features/auth/actions").then(({ getCurrentUser }) => {
@@ -78,6 +79,7 @@ export function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
         if (res.data.companyName) setCompanyName(res.data.companyName)
         if (res.data.logoUrl) setLogoUrl(res.data.logoUrl)
       }
+      setIsSettingsLoaded(true)
     })
   }, [])
 
@@ -86,11 +88,21 @@ export function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
       {/* Brand area */}
       <div className="flex h-20 items-center px-6 border-b border-neutral-100 bg-neutral-50/50">
         <Link href="/" className="flex items-center gap-3 font-bold text-neutral-800">
-          <img
-            src={logoUrl}
-            alt="Logo"
-            className="h-10 w-10 shrink-0 object-contain rounded-lg select-none"
-          />
+          {isSettingsLoaded ? (
+            logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="Logo"
+                className="h-10 w-10 shrink-0 object-contain rounded-lg select-none"
+              />
+            ) : (
+              <div className="h-10 w-10 shrink-0 bg-sky-100 text-sky-600 flex items-center justify-center font-black rounded-lg select-none text-xl">
+                {companyName.substring(0, 1)}
+              </div>
+            )
+          ) : (
+            <div className="h-10 w-10 shrink-0 bg-neutral-200 animate-pulse rounded-lg" />
+          )}
           <div className="flex flex-col min-w-0">
             <span className="text-sm font-bold tracking-tight text-neutral-800 uppercase leading-none">{companyName}</span>
             <span className="text-[9px] font-medium text-neutral-400 mt-1 leading-tight">
