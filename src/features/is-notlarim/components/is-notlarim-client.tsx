@@ -130,7 +130,7 @@ export function IsNotlarimClient() {
           className="absolute inset-0 pointer-events-none opacity-40 rounded-2xl"
           style={{
             backgroundImage: "repeating-linear-gradient(transparent, transparent 39px, #64748b 40px)",
-            backgroundPosition: "0 -10px"
+            backgroundPosition: "0 -2px"
           }}
         />
         
