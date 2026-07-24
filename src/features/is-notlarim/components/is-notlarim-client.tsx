@@ -124,7 +124,7 @@ export function IsNotlarimClient() {
         </div>
       </div>
 
-      <div className="bg-[#f9f5ec] p-6 sm:p-10 rounded-2xl shadow-inner border border-[#e4dfd4] relative min-h-[500px]">
+      <div className="bg-[#f9f5ec] px-2 py-6 sm:p-10 rounded-2xl shadow-inner border border-[#e4dfd4] relative min-h-[500px] overflow-hidden">
         {/* Notebook styling background lines */}
         <div 
           className="absolute inset-0 pointer-events-none opacity-40 rounded-2xl"
@@ -137,9 +137,9 @@ export function IsNotlarimClient() {
         {/* Notebook red left margin line */}
         <div className="absolute left-6 sm:left-12 top-0 bottom-0 w-0.5 bg-red-400 opacity-40 pointer-events-none" />
 
-        <div className="relative z-10 pl-4 sm:pl-10 space-y-[0px] pt-1">
+        <div className="relative z-10 pl-6 sm:pl-10 space-y-[0px] pt-1">
           {notes.map((note) => (
-            <div key={note.id} className="flex items-start gap-2 group min-h-[40px] h-auto">
+            <div key={note.id} className="flex items-start group min-h-[40px] h-auto relative pr-2 sm:pr-8">
               <textarea
                 ref={(el) => {
                   if (el) {
@@ -155,11 +155,11 @@ export function IsNotlarimClient() {
                 }}
                 rows={1}
                 placeholder="Buraya notunuzu yazın..."
-                className={`flex-1 min-h-[40px] resize-none overflow-hidden px-1 text-[16px] outline-none transition-colors font-medium ${getColorClass(note.renk)} placeholder:text-neutral-400/70 placeholder:font-normal mix-blend-multiply`}
+                className={`w-full min-h-[40px] resize-none overflow-hidden px-1 text-[16px] outline-none transition-colors font-medium ${getColorClass(note.renk)} placeholder:text-neutral-400/70 placeholder:font-normal mix-blend-multiply`}
                 style={{ lineHeight: "40px", paddingTop: "0", paddingBottom: "0" }}
               />
               
-              <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
+              <div className="absolute right-0 top-1.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity bg-[#f9f5ec]/95 backdrop-blur-sm rounded-lg p-1 shadow-sm border border-[#e4dfd4] z-10">
                 <button
                   onClick={() => updateRow(note.id, "renk", "white")}
                   className={`w-6 h-6 rounded-full border-2 ${note.renk === "white" ? "border-neutral-800 scale-110" : "border-neutral-200 bg-white"} hover:scale-110 transition-transform shadow-sm`}
