@@ -90,20 +90,20 @@ export function GenelUretimLayout() {
           <div className="relative flex-1">
             <button 
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-full h-10 px-3 bg-white border border-neutral-300 rounded-lg flex items-center justify-between text-xs font-bold text-neutral-800 shadow-sm hover:bg-neutral-50 transition-colors"
+              className="allow-viewer w-full h-10 px-3 bg-white border border-neutral-300 rounded-lg flex items-center justify-between text-xs font-bold text-neutral-800 shadow-sm hover:bg-neutral-50 transition-colors"
             >
               <span className="truncate">{activeSezon ? activeSezon.ad : "Sezon Seçiniz"}</span>
               <ChevronDown className="w-4 h-4 text-neutral-400" />
             </button>
 
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-neutral-200 shadow-lg rounded-xl z-50 overflow-hidden">
+              <div className="allow-viewer absolute top-full left-0 right-0 mt-1 bg-white border border-neutral-200 shadow-lg rounded-xl z-50 overflow-hidden">
                 <div className="max-h-60 overflow-y-auto p-1 space-y-1">
                   {sezonlar.map((sezon) => (
                     <div 
                       key={sezon.id}
                       onClick={() => { setActiveSezonId(sezon.id); setIsDropdownOpen(false) }}
-                      className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
+                      className={`allow-viewer flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
                         activeSezonId === sezon.id ? "bg-indigo-50 text-indigo-900" : "hover:bg-neutral-100 text-neutral-700"
                       }`}
                     >

@@ -47,7 +47,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       // Allow export and safe navigation buttons
       const closestBtn = target.closest('button');
-      const text = (closestBtn?.textContent || target.textContent || '').toLowerCase();
+      const titleAttr = (closestBtn?.getAttribute('title') || target.getAttribute('title') || '').toLowerCase();
+      const text = (closestBtn?.textContent || target.textContent || '').toLowerCase() + ' ' + titleAttr;
       const isSafeAction = text.includes('pdf') || 
                            text.includes('excel') || 
                            text.includes('indir') || 
@@ -57,6 +58,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                            text.includes('vazgeç') ||
                            text.includes('kapat') ||
                            text.includes('sırala') ||
+                           text.includes('sirala') ||
                            target.closest('[data-export]') || 
                            target.closest('.export');
       if (isSafeAction) return;
