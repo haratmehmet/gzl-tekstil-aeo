@@ -139,7 +139,7 @@ export function GenelUretimLayout() {
         <div className="flex-1 flex">
           <button
             onClick={() => setActiveTab("academia")}
-            className={`flex-1 flex items-center justify-center py-3 text-[11px] font-black uppercase tracking-wider transition-all ${
+            className={`allow-viewer flex-1 flex items-center justify-center py-3 text-[11px] font-black uppercase tracking-wider transition-all ${
               activeTab === "academia" 
                 ? "bg-white text-neutral-900 shadow-[inset_0_-2px_0_0_#171717]" 
                 : "text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100/50"
@@ -149,7 +149,7 @@ export function GenelUretimLayout() {
           </button>
           <button
             onClick={() => setActiveTab("beymen")}
-            className={`flex-1 flex items-center justify-center py-3 text-[11px] font-black uppercase tracking-wider transition-all border-l border-neutral-200 ${
+            className={`allow-viewer flex-1 flex items-center justify-center py-3 text-[11px] font-black uppercase tracking-wider transition-all border-l border-neutral-200 ${
               activeTab === "beymen" 
                 ? "bg-white text-neutral-900 shadow-[inset_0_-2px_0_0_#171717]" 
                 : "text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100/50"
