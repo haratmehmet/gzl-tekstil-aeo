@@ -20,7 +20,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [showViewerToast, setShowViewerToast] = React.useState(false)
 
   React.useEffect(() => {
-    if (userRole !== "VIEWER") return
+    if (userRole === "SUPER_ADMIN" || userRole === "ADMIN") return
 
     // Bulletproof shield for VIEWER role
     const handleViewerFocus = (e: FocusEvent) => {
@@ -91,7 +91,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 
   React.useEffect(() => {
-    if (userRole === "VIEWER") {
+    if (userRole !== "SUPER_ADMIN" && userRole !== "ADMIN") {
       document.body.classList.add('viewer-mode');
     } else {
       document.body.classList.remove('viewer-mode');
@@ -189,7 +189,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <div>
             <h4 className="font-bold text-orange-800 text-sm mb-0.5">Yetkisiz İşlem</h4>
-            <p className="text-xs text-orange-600 leading-relaxed font-medium">Sadece İzleyici (Viewer) yetkisine sahip olduğunuz için bu alana veri giremez veya değişiklik yapamazsınız.</p>
+            <p className="text-xs text-orange-600 leading-relaxed font-medium">Yetkiniz sınırlandırılmıştır. Bu alana veri giremez veya değişiklik yapamazsınız. Sadece görüntüleme yapabilirsiniz.</p>
           </div>
         </div>
       )}
