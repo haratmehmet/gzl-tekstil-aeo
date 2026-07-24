@@ -45,11 +45,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       const isAllowedExplicitly = target.closest('.allow-viewer');
       if (closestLink || closestNav || isAllowedExplicitly) return;
 
-      // Allow export buttons
+      // Allow export and safe navigation buttons
       const closestBtn = target.closest('button');
-      const text = (closestBtn?.innerText || target.innerText || '').toLowerCase();
-      const isExport = text.includes('pdf') || text.includes('excel') || text.includes('indir') || target.closest('[data-export]') || target.closest('.export') || text.includes('yazdır');
-      if (isExport) return;
+      const text = (closestBtn?.textContent || target.textContent || '').toLowerCase();
+      const isSafeAction = text.includes('pdf') || 
+                           text.includes('excel') || 
+                           text.includes('indir') || 
+                           text.includes('yazdır') ||
+                           text.includes('geri') ||
+                           text.includes('iptal') ||
+                           text.includes('vazgeç') ||
+                           text.includes('kapat') ||
+                           text.includes('sırala') ||
+                           target.closest('[data-export]') || 
+                           target.closest('.export');
+      if (isSafeAction) return;
 
       const isInput = target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
       const isLabel = target.tagName === 'LABEL' || target.closest('label');
