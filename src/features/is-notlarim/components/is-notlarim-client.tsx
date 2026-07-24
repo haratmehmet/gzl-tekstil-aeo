@@ -159,7 +159,7 @@ export function IsNotlarimClient() {
                 style={{ lineHeight: "40px", paddingTop: "0", paddingBottom: "0" }}
               />
               
-              <div className="absolute right-0 top-1.5 flex items-center gap-1 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto transition-opacity bg-[#f9f5ec]/95 backdrop-blur-sm rounded-lg p-1 shadow-sm border border-[#e4dfd4] z-10">
+              <div className="absolute right-0 top-1.5 flex items-center gap-1 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity bg-[#f9f5ec]/95 backdrop-blur-sm rounded-lg p-1 shadow-sm border border-[#e4dfd4] z-10">
                 <button
                   onClick={() => updateRow(note.id, "renk", "white")}
                   className={`w-6 h-6 rounded-full border-2 ${note.renk === "white" ? "border-neutral-800 scale-110" : "border-neutral-200 bg-white"} hover:scale-110 transition-transform shadow-sm`}
