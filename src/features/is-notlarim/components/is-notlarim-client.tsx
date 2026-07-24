@@ -20,14 +20,7 @@ export function IsNotlarimClient() {
     loadNotes()
   }, [])
 
-  useEffect(() => {
-    // Automatically adjust textarea heights when notes load or change initially
-    const textareas = document.querySelectorAll('textarea');
-    textareas.forEach(t => {
-      t.style.height = 'auto';
-      t.style.height = `${t.scrollHeight}px`;
-    });
-  }, [notes.length]);
+
 
   const loadNotes = async () => {
     setIsLoading(true)
@@ -148,6 +141,12 @@ export function IsNotlarimClient() {
           {notes.map((note) => (
             <div key={note.id} className="flex items-start gap-2 group min-h-[40px] h-auto">
               <textarea
+                ref={(el) => {
+                  if (el) {
+                    el.style.height = "auto";
+                    el.style.height = `${el.scrollHeight}px`;
+                  }
+                }}
                 value={note.icerik}
                 onChange={(e) => {
                   e.target.style.height = "auto";
