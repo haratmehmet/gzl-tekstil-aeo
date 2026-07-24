@@ -230,6 +230,14 @@ export function KalanKumasTable() {
         </div>
         <div className="flex flex-wrap items-center gap-2 justify-center">
           <button
+            onClick={() => requestSort("depoyaGirisTarihi")}
+            className="flex lg:hidden items-center gap-1.5 px-3 py-1.5 bg-sky-50 text-sky-700 border border-sky-200 text-xs font-bold rounded-lg shadow-sm hover:bg-sky-100 transition-colors"
+            title="Tarihe Göre Sırala"
+          >
+            <ArrowUpDown className="h-4 w-4" />
+            Sırala
+          </button>
+          <button
             onClick={handleExportExcel}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-xs font-bold rounded-lg shadow-sm hover:bg-green-500 transition-colors"
           >
