@@ -26,6 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const handleViewerFocus = (e: FocusEvent) => {
       const target = e.target as HTMLElement;
       if (!target) return;
+      if (target.closest('.allow-viewer')) return;
       
       const isInput = target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
       if (isInput) {

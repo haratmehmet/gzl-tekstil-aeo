@@ -76,7 +76,7 @@ export function KumasTakipList({ sheets, onSelect, onDelete, activeId }: KumasTa
             placeholder="Kodu, model veya firma ara..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-9 text-xs border-neutral-200 focus-visible:ring-neutral-400 bg-neutral-50/30"
+            className="allow-viewer pl-9 h-9 text-xs border-neutral-200 focus-visible:ring-neutral-400 bg-neutral-50/30"
           />
         </div>
       </CardHeader>

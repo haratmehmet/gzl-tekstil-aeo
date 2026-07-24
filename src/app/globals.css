@@ -133,10 +133,10 @@
 
 
 /* VIEWER MODE SHIELD */
-body.viewer-mode input:not([type="hidden"]),
-body.viewer-mode select,
-body.viewer-mode textarea,
-body.viewer-mode [contenteditable="true"] {
+body.viewer-mode input:not([type="hidden"]):not(.allow-viewer),
+body.viewer-mode select:not(.allow-viewer),
+body.viewer-mode textarea:not(.allow-viewer),
+body.viewer-mode [contenteditable="true"]:not(.allow-viewer) {
   pointer-events: none !important;
   user-select: none !important;
 }
