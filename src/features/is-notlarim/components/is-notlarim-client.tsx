@@ -20,6 +20,15 @@ export function IsNotlarimClient() {
     loadNotes()
   }, [])
 
+  useEffect(() => {
+    // Automatically adjust textarea heights when notes load or change initially
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(t => {
+      t.style.height = 'auto';
+      t.style.height = `${t.scrollHeight}px`;
+    });
+  }, [notes.length]);
+
   const loadNotes = async () => {
     setIsLoading(true)
     const res = await getNotes()
@@ -137,13 +146,18 @@ export function IsNotlarimClient() {
 
         <div className="relative z-10 pl-4 sm:pl-10 space-y-[0px] pt-1">
           {notes.map((note) => (
-            <div key={note.id} className="flex items-start gap-2 group h-[40px]">
-              <input
-                type="text"
+            <div key={note.id} className="flex items-start gap-2 group min-h-[40px] h-auto">
+              <textarea
                 value={note.icerik}
-                onChange={(e) => updateRow(note.id, "icerik", e.target.value)}
+                onChange={(e) => {
+                  e.target.style.height = "auto";
+                  e.target.style.height = `${e.target.scrollHeight}px`;
+                  updateRow(note.id, "icerik", e.target.value);
+                }}
+                rows={1}
                 placeholder="Buraya notunuzu yazın..."
-                className={`flex-1 h-[32px] mt-1 px-3 py-1 text-[15px] rounded outline-none transition-colors font-medium ${getColorClass(note.renk)} shadow-sm placeholder:text-neutral-400 placeholder:font-normal`}
+                className={`flex-1 min-h-[40px] resize-none overflow-hidden px-3 text-[15px] rounded outline-none transition-colors font-medium ${getColorClass(note.renk)} shadow-sm placeholder:text-neutral-400 placeholder:font-normal`}
+                style={{ lineHeight: "40px" }}
               />
               
               <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
