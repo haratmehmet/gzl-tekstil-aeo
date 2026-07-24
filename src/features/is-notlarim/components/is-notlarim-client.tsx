@@ -78,9 +78,9 @@ export function IsNotlarimClient() {
 
   const getColorClass = (renk: string) => {
     switch (renk) {
-      case "red": return "bg-rose-100 focus:bg-rose-50 text-rose-900 border-rose-200"
-      case "green": return "bg-emerald-100 focus:bg-emerald-50 text-emerald-900 border-emerald-200"
-      default: return "bg-white focus:bg-neutral-50 text-neutral-800 border-transparent"
+      case "red": return "bg-rose-300/30 focus:bg-rose-300/40 text-rose-950"
+      case "green": return "bg-emerald-300/30 focus:bg-emerald-300/40 text-emerald-950"
+      default: return "bg-transparent focus:bg-white/20 text-neutral-800"
     }
   }
 
@@ -155,8 +155,8 @@ export function IsNotlarimClient() {
                 }}
                 rows={1}
                 placeholder="Buraya notunuzu yazın..."
-                className={`flex-1 min-h-[40px] resize-none overflow-hidden px-3 text-[15px] rounded outline-none transition-colors font-medium ${getColorClass(note.renk)} shadow-sm placeholder:text-neutral-400 placeholder:font-normal`}
-                style={{ lineHeight: "40px" }}
+                className={`flex-1 min-h-[40px] resize-none overflow-hidden px-1 text-[16px] outline-none transition-colors font-medium ${getColorClass(note.renk)} placeholder:text-neutral-400/70 placeholder:font-normal mix-blend-multiply`}
+                style={{ lineHeight: "40px", paddingTop: "0", paddingBottom: "0" }}
               />
               
               <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
