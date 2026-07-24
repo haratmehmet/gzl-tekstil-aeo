@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { getNotes, saveNotes } from "../actions"
-import { Plus, Save, Trash2, Loader2, StickyNote } from "lucide-react"
+import { Plus, Save, Trash2, Loader2, StickyNote, CheckCircle2 } from "lucide-react"
 
 type NoteRow = {
   id: string
@@ -15,6 +15,8 @@ export function IsNotlarimClient() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState("")
+
+  const [showSuccessToast, setShowSuccessToast] = useState(false)
 
   useEffect(() => {
     loadNotes()
@@ -56,7 +58,8 @@ export function IsNotlarimClient() {
 
     const res = await saveNotes(toSave)
     if (res.success) {
-      alert("Notlar başarıyla kaydedildi.")
+      setShowSuccessToast(true)
+      setTimeout(() => setShowSuccessToast(false), 3000)
       loadNotes()
     } else {
       setError(res.error || "Kaydedilirken hata oluştu. Yetkiniz olmayabilir.")
@@ -194,6 +197,21 @@ export function IsNotlarimClient() {
           )}
         </div>
       </div>
+
+      {/* Success Toast */}
+      {showSuccessToast && (
+        <div className="fixed bottom-6 right-6 z-[9999] animate-in slide-in-from-bottom-5 fade-in duration-300">
+          <div className="bg-emerald-50 border border-emerald-200 shadow-lg rounded-2xl p-4 flex items-start gap-3 max-w-sm">
+            <div className="p-2 bg-emerald-100 rounded-full shrink-0">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <h4 className="font-bold text-emerald-800 text-sm mb-0.5">Başarılı</h4>
+              <p className="text-xs text-emerald-600 font-medium">Defterdeki değişiklikler güvenle kaydedildi.</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
