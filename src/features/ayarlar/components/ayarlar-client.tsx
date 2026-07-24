@@ -70,11 +70,12 @@ export function AyarlarClient({ initialSettings, initialUsers }: Props) {
   }
 
   const handleAddUser = async () => {
-    if (!newUser.email || !newUser.password || !newUser.name) {
+    if (!newUser.email || !newUser.password) {
       alert("Lütfen tüm alanları doldurun.")
       return
     }
-    const res = await createUser(newUser)
+    const payload = { ...newUser, name: newUser.email }
+    const res = await createUser(payload)
     if (res.success) {
       alert("Kullanıcı başarıyla eklendi.")
       setIsAddingUser(false)
@@ -279,14 +280,14 @@ export function AyarlarClient({ initialSettings, initialUsers }: Props) {
             {isAddingUser && (
               <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-200 space-y-4">
                 <h3 className="text-sm font-bold text-neutral-800">Yeni Kullanıcı Ekle</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="text" placeholder="Ad Soyad" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} className="px-3 py-2 border border-neutral-200 rounded-lg text-sm" />
-                  <input type="email" placeholder="E-posta Adresi" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} className="px-3 py-2 border border-neutral-200 rounded-lg text-sm" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <input type="text" placeholder="Kullanıcı Adı" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} className="px-3 py-2 border border-neutral-200 rounded-lg text-sm" />
                   <input type="password" placeholder="Şifre" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} className="px-3 py-2 border border-neutral-200 rounded-lg text-sm" />
                   <select value={newUser.role} onChange={e => setNewUser({...newUser, role: e.target.value})} className="px-3 py-2 border border-neutral-200 rounded-lg text-sm">
                     <option value="USER">Standart Kullanıcı</option>
                     <option value="ADMIN">Yönetici</option>
                     <option value="SUPER_ADMIN">Süper Admin</option>
+                    <option value="VIEWER">Sadece İzleyici</option>
                   </select>
                 </div>
                 <div className="flex justify-end gap-2">
@@ -300,8 +301,7 @@ export function AyarlarClient({ initialSettings, initialUsers }: Props) {
               <table className="w-full text-left text-sm">
                 <thead className="bg-neutral-50 border-b border-neutral-200 text-neutral-500 font-semibold text-xs uppercase">
                   <tr>
-                    <th className="px-4 py-3">Kullanıcı</th>
-                    <th className="px-4 py-3">E-posta</th>
+                    <th className="px-4 py-3" colSpan={2}>Kullanıcı Adı</th>
                     <th className="px-4 py-3">Rol</th>
                     <th className="px-4 py-3 text-right">İşlemler</th>
                   </tr>
@@ -311,11 +311,8 @@ export function AyarlarClient({ initialSettings, initialUsers }: Props) {
                     <tr key={u.id} className="hover:bg-neutral-50 transition-colors">
                       {editingUserId === u.id ? (
                         <>
-                          <td className="px-4 py-3">
-                            <input type="text" value={editUserData.name} onChange={e => setEditUserData({...editUserData, name: e.target.value})} className="px-2 py-1.5 border border-neutral-200 rounded-lg text-xs w-full focus:outline-none focus:border-sky-500" placeholder="Ad Soyad" />
-                          </td>
-                          <td className="px-4 py-3">
-                            <input type="email" value={editUserData.email} onChange={e => setEditUserData({...editUserData, email: e.target.value})} className="px-2 py-1.5 border border-neutral-200 rounded-lg text-xs w-full focus:outline-none focus:border-sky-500" placeholder="E-posta" />
+                          <td className="px-4 py-3" colSpan={2}>
+                            <input type="text" value={editUserData.email} onChange={e => setEditUserData({...editUserData, email: e.target.value})} className="px-2 py-1.5 border border-neutral-200 rounded-lg text-xs w-full focus:outline-none focus:border-sky-500" placeholder="Kullanıcı Adı" />
                           </td>
                           <td className="px-4 py-3 space-y-2">
                             <select value={editUserData.role} onChange={e => setEditUserData({...editUserData, role: e.target.value})} className="px-2 py-1.5 border border-neutral-200 rounded-lg text-xs w-full focus:outline-none focus:border-sky-500">
@@ -332,8 +329,7 @@ export function AyarlarClient({ initialSettings, initialUsers }: Props) {
                         </>
                       ) : (
                         <>
-                          <td className="px-4 py-3 font-medium text-neutral-800">{u.name}</td>
-                          <td className="px-4 py-3 text-neutral-600">{u.email}</td>
+                          <td className="px-4 py-3 font-medium text-neutral-800" colSpan={2}>{u.email}</td>
                           <td className="px-4 py-3">
                             <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold ${u.role === 'SUPER_ADMIN' ? 'bg-red-100 text-red-700' : u.role === 'ADMIN' ? 'bg-indigo-100 text-indigo-700' : u.role === 'VIEWER' ? 'bg-orange-100 text-orange-700' : 'bg-neutral-100 text-neutral-700'}`}>
                               {u.role === 'SUPER_ADMIN' ? 'SÜPER ADMİN' : u.role === 'ADMIN' ? 'YÖNETİCİ' : u.role === 'VIEWER' ? 'İZLEYİCİ' : 'KULLANICI'}
