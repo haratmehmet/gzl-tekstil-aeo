@@ -130,3 +130,13 @@
 }
 
 @media print { * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
+
+
+/* VIEWER MODE SHIELD */
+body.viewer-mode input:not([type="hidden"]),
+body.viewer-mode select,
+body.viewer-mode textarea,
+body.viewer-mode [contenteditable="true"] {
+  pointer-events: none !important;
+  user-select: none !important;
+}
