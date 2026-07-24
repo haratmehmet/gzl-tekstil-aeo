@@ -217,3 +217,12 @@ model SystemSettings {
   systemStatus String   @default("AKTIF") // AKTIF, BAKIMDA, PASIF
   updatedAt    DateTime @updatedAt
 }
+
+model IsNotu {
+  id        String   @id @default(uuid())
+  icerik    String
+  renk      String   @default("white") // white, red, green
+  sira      Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

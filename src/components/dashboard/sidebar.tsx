@@ -17,6 +17,7 @@ import {
   Scissors,
   LogOut,
   Ruler,
+  StickyNote
 } from "lucide-react"
 
 export type NavigationItem =
@@ -31,6 +32,7 @@ export const navigationItems: NavigationItem[] = [
   { name: "Çekme Tablosu", href: "/cekme-tablosu", icon: Ruler },
   { name: "Kalan Kumaş Stok", href: "/kalan-kumas-stok", icon: Layers },
   { name: "Kumas Deposu", href: "/kumas-deposu", icon: Warehouse },
+  { name: "İş Notlarım", href: "/is-notlarim", icon: StickyNote },
   { isDivider: true, id: "div-2" },
   { name: "Kesim Kontrol Föyü", href: "/kesim-kontrol-foyu", icon: Scissors },
   { name: "Ürün Takip Föyü", href: "/uretim-takip-foyu", icon: Grid },
