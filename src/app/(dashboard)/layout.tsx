@@ -42,7 +42,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       // Allow navigation clicks
       const closestLink = target.closest('a');
       const closestNav = target.closest('nav, aside, .sidebar'); // Removed header just in case table header uses it
-      if (closestLink || closestNav) return;
+      const isAllowedExplicitly = target.closest('.allow-viewer');
+      if (closestLink || closestNav || isAllowedExplicitly) return;
 
       // Allow export buttons
       const closestBtn = target.closest('button');

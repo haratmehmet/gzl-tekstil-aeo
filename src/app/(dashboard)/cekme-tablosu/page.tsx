@@ -129,13 +129,13 @@ export default function CekmeTablosuPage() {
         {!isEditing && (
           <div className="flex items-center gap-3">
             <DropdownMenu>
-              <DropdownMenuTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-neutral-300 bg-white hover:bg-neutral-100 hover:text-neutral-900 h-10 px-4 py-2 text-neutral-600">
+              <DropdownMenuTrigger className="allow-viewer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-neutral-300 bg-white hover:bg-neutral-100 hover:text-neutral-900 h-10 px-4 py-2 text-neutral-600">
                   <span className="font-semibold text-neutral-800">{activeFilter}</span>
                   <ChevronDown className="h-4 w-4" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-auto min-w-[200px]">
+              <DropdownMenuContent align="end" className="w-auto min-w-[200px] allow-viewer">
                 {availableFilters.map((filter) => (
-                  <DropdownMenuItem key={filter} onClick={() => setActiveFilter(filter)} className={activeFilter === filter ? "bg-neutral-100 font-bold" : ""}>
+                  <DropdownMenuItem key={filter} onClick={() => setActiveFilter(filter)} className={`allow-viewer ${activeFilter === filter ? "bg-neutral-100 font-bold" : ""}`}>
                     {filter}
                   </DropdownMenuItem>
                 ))}
