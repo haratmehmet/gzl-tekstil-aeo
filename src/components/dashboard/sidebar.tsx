@@ -64,6 +64,7 @@ export function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
   const [companyName, setCompanyName] = React.useState("GZL TEKSTİL")
   const [logoUrl, setLogoUrl] = React.useState<string | null>(null)
   const [isSettingsLoaded, setIsSettingsLoaded] = React.useState(false)
+  const [isImageLoaded, setIsImageLoaded] = React.useState(false)
 
   React.useEffect(() => {
     import("@/features/auth/actions").then(({ getCurrentUser }) => {
@@ -90,11 +91,17 @@ export function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
         <Link href="/" className="flex items-center gap-3 font-bold text-neutral-800">
           {isSettingsLoaded ? (
             logoUrl ? (
-              <img
-                src={logoUrl}
-                alt="Logo"
-                className="h-10 w-10 shrink-0 object-contain rounded-lg select-none"
-              />
+              <div className="relative h-10 w-10 shrink-0 rounded-lg">
+                {!isImageLoaded && (
+                  <div className="absolute inset-0 bg-neutral-200 animate-pulse rounded-lg" />
+                )}
+                <img
+                  src={logoUrl}
+                  alt=""
+                  onLoad={() => setIsImageLoaded(true)}
+                  className={`relative z-10 h-10 w-10 shrink-0 object-contain rounded-lg select-none transition-opacity duration-300 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                />
+              </div>
             ) : (
               <div className="h-10 w-10 shrink-0 bg-sky-100 text-sky-600 flex items-center justify-center font-black rounded-lg select-none text-xl">
                 {companyName.substring(0, 1)}
