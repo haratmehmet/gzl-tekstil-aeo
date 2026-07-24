@@ -1,9 +1,11 @@
 "use server"
 
 import prisma from "@/lib/prisma"
+import { requireMutationAuth } from "@/lib/session"
 
 export async function exportDatabase() {
   try {
+    await requireMutationAuth();
     const kumasTakip = await prisma.kumasTakip.findMany({ include: { rolls: true } })
     const cekmeFoyu = await prisma.cekmeFoyu.findMany({ include: { fabrics: true } })
     const kalanKumas = await prisma.kalanKumas.findMany()
@@ -36,6 +38,7 @@ export async function exportDatabase() {
 
 export async function importDatabase(data: any) {
   try {
+    await requireMutationAuth();
     if (!data.version || !data.exportDate) {
       throw new Error("Geçersiz yedek dosyası (version/exportDate bulunamadı).")
     }

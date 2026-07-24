@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { requireMutationAuth } from "@/lib/session"
 
 export async function GET() {
   try {
@@ -16,6 +17,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    await requireMutationAuth();
     const body = await request.json()
     const { id, eklenmeTarihi, updatedAt, ...data } = body
 
@@ -34,6 +36,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
+    await requireMutationAuth();
     const body = await request.json()
     const { id, eklenmeTarihi, updatedAt, ...data } = body
 
@@ -57,6 +60,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    await requireMutationAuth();
     const url = new URL(request.url)
     const id = url.searchParams.get("id")
 

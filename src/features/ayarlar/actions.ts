@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import prisma from "@/lib/prisma"
+import { requireMutationAuth } from "@/lib/session"
 
 // --- SYSTEM SETTINGS ---
 
@@ -25,6 +26,7 @@ export async function getSystemSettings() {
 
 export async function updateSystemSettings(data: any) {
   try {
+    await requireMutationAuth();
     const updateData: any = {
       companyName: data.companyName,
       logoUrl: data.logoUrl,
@@ -73,6 +75,7 @@ import bcrypt from "bcryptjs"
 
 export async function createUser(data: any) {
   try {
+    await requireMutationAuth();
     const hashedPassword = await bcrypt.hash(data.password, 10)
     
     const user = await prisma.user.create({
@@ -93,6 +96,7 @@ export async function createUser(data: any) {
 
 export async function updateUser(id: string, data: any) {
   try {
+    await requireMutationAuth();
     const updateData = { ...data }
     
     if (updateData.password) {
@@ -112,6 +116,7 @@ export async function updateUser(id: string, data: any) {
 
 export async function deleteUser(id: string) {
   try {
+    await requireMutationAuth();
     await prisma.user.delete({
       where: { id }
     })

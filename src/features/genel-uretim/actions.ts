@@ -1,6 +1,7 @@
 "use server"
 
 import prisma from "@/lib/prisma"
+import { requireMutationAuth } from "@/lib/session"
 import { revalidatePath } from "next/cache"
 
 export async function getUretimSezonlar() {
@@ -16,6 +17,7 @@ export async function getUretimSezonlar() {
 
 export async function addUretimSezon(ad: string) {
   try {
+    await requireMutationAuth();
     if (!ad || ad.trim() === "") {
       return { success: false, error: "Sezon adı boş olamaz" }
     }
@@ -31,6 +33,7 @@ export async function addUretimSezon(ad: string) {
 
 export async function deleteUretimSezon(id: string) {
   try {
+    await requireMutationAuth();
     await prisma.uretimSezon.delete({
       where: { id }
     })
@@ -55,6 +58,7 @@ export async function getGenelUretimKayitlar(sezonId: string, markaTipi: string)
 
 export async function addGenelUretimKayit(sezonId: string, markaTipi: string) {
   try {
+    await requireMutationAuth();
     const yeniKayit = await prisma.genelUretimKayit.create({
       data: {
         sezonId,
@@ -83,6 +87,7 @@ export async function addGenelUretimKayit(sezonId: string, markaTipi: string) {
 
 export async function updateGenelUretimKayit(id: string, data: any) {
   try {
+    await requireMutationAuth();
     const guncelKayit = await prisma.genelUretimKayit.update({
       where: { id },
       data
@@ -96,6 +101,7 @@ export async function updateGenelUretimKayit(id: string, data: any) {
 
 export async function deleteGenelUretimKayit(id: string) {
   try {
+    await requireMutationAuth();
     await prisma.genelUretimKayit.delete({
       where: { id }
     })
@@ -108,6 +114,7 @@ export async function deleteGenelUretimKayit(id: string) {
 
 export async function updateGenelUretimKayitBulkColor(ids: string[], color: string) {
   try {
+    await requireMutationAuth();
     await prisma.genelUretimKayit.updateMany({
       where: { id: { in: ids } },
       data: { satirRengi: color }

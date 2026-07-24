@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { requireMutationAuth } from "@/lib/session"
 
 export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    await requireMutationAuth();
     const { id } = await context.params
     const { bedenler, ...rest } = await req.json()
     const updated = await prisma.uretimTakipFoyu.update({
@@ -17,6 +19,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
 
 export async function DELETE(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    await requireMutationAuth();
     const { id } = await context.params
     await prisma.uretimTakipFoyu.delete({ where: { id } })
     return NextResponse.json({ success: true })

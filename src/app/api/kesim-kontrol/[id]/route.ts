@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { requireMutationAuth } from "@/lib/session"
 
 export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    await requireMutationAuth();
     const data = await req.json()
     const { id } = await context.params
     const { kumaslar, bedenler, ...rest } = data
@@ -29,6 +31,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
 
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    await requireMutationAuth();
     const { id } = await context.params
     await prisma.kesimKontrolFoyu.delete({
       where: { id },

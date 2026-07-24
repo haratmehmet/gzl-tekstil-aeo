@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { storageService } from '@/lib/storage';
+import { requireMutationAuth } from "@/lib/session"
 
 export async function POST(request: Request) {
   try {
+    await requireMutationAuth();
     const data = await request.formData();
     const file: File | null = data.get('file') as unknown as File;
 

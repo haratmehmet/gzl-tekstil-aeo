@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { requireMutationAuth } from "@/lib/session"
 
 export async function GET() {
   try {
@@ -18,6 +19,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    await requireMutationAuth();
     const { bedenler, ...rest } = await req.json()
     const newRecord = await prisma.uretimTakipFoyu.create({
       data: { ...rest, bedenler: bedenler || [] },

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { requireMutationAuth } from "@/lib/session"
 
 export async function GET() {
   try {
@@ -23,6 +24,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    await requireMutationAuth();
     const data = await req.json()
     const { kumaslar, bedenler, ...rest } = data
 

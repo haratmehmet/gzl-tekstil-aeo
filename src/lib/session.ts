@@ -76,3 +76,11 @@ export async function getSessionUser() {
   // Session is valid
   return session.user
 }
+
+// Güvenli mutasyon kontrolü: Sadece VIEWER (İzleyici) olmayanlar değişiklik yapabilir
+export async function requireMutationAuth() {
+  const user = await getSessionUser()
+  if (!user) throw new Error("Oturum bulunamadı. Lütfen giriş yapın.")
+  if (user.role === "VIEWER") throw new Error("Sadece izleyici yetkisine sahipsiniz, değişiklik yapamazsınız.")
+  return user
+}

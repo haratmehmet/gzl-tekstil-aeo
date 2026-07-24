@@ -335,8 +335,8 @@ export function AyarlarClient({ initialSettings, initialUsers }: Props) {
                           <td className="px-4 py-3 font-medium text-neutral-800">{u.name}</td>
                           <td className="px-4 py-3 text-neutral-600">{u.email}</td>
                           <td className="px-4 py-3">
-                            <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold ${u.role === 'SUPER_ADMIN' ? 'bg-red-100 text-red-700' : u.role === 'ADMIN' ? 'bg-indigo-100 text-indigo-700' : 'bg-neutral-100 text-neutral-700'}`}>
-                              {u.role === 'SUPER_ADMIN' ? 'SÜPER ADMİN' : u.role === 'ADMIN' ? 'YÖNETİCİ' : 'KULLANICI'}
+                            <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold ${u.role === 'SUPER_ADMIN' ? 'bg-red-100 text-red-700' : u.role === 'ADMIN' ? 'bg-indigo-100 text-indigo-700' : u.role === 'VIEWER' ? 'bg-orange-100 text-orange-700' : 'bg-neutral-100 text-neutral-700'}`}>
+                              {u.role === 'SUPER_ADMIN' ? 'SÜPER ADMİN' : u.role === 'ADMIN' ? 'YÖNETİCİ' : u.role === 'VIEWER' ? 'İZLEYİCİ' : 'KULLANICI'}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-right">
