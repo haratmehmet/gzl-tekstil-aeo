@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Plus, Trash2, DownloadCloud, FileSpreadsheet, Printer, ArrowUpDown, StickyNote } from "lucide-react"
+import { DebouncedInput } from "@/components/ui/debounced-input"
 import * as ExcelJS from "exceljs"
 
 function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRowTotal: any, updateRecord: any }) {
@@ -304,40 +305,40 @@ export function KalanKumasTable() {
                       </button>
                     </td>
                     <td className="p-1 border-r border-neutral-200">
-                    <input
+                    <DebouncedInput
                       value={r.faturaNo}
-                      onChange={(e) => updateRecord(r.id, { faturaNo: e.target.value.toUpperCase() })}
+                      onChange={(val) => updateRecord(r.id, { faturaNo: String(val).toUpperCase()  })}
                       className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-neutral-700 print:text-[10px]"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200">
-                    <input
+                    <DebouncedInput
                       value={r.malzemeKodu}
-                      onChange={(e) => updateRecord(r.id, { malzemeKodu: e.target.value.toUpperCase() })}
+                      onChange={(val) => updateRecord(r.id, { malzemeKodu: String(val).toUpperCase()  })}
                       className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-neutral-700 print:text-[10px]"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200">
-                    <input
+                    <DebouncedInput
                       type="date"
                       value={r.faturaTarih}
-                      onChange={(e) => updateRecord(r.id, { faturaTarih: e.target.value })}
+                      onChange={(val) => updateRecord(r.id, { faturaTarih: String(val)  })}
                       className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center text-neutral-700 print:text-[9px]"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200">
-                    <input
+                    <DebouncedInput
                       type="date"
                       value={r.depoyaGirisTarihi}
-                      onChange={(e) => updateRecord(r.id, { depoyaGirisTarihi: e.target.value })}
+                      onChange={(val) => updateRecord(r.id, { depoyaGirisTarihi: String(val)  })}
                       className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center text-neutral-700 print:text-[9px]"
                     />
                   </td>
 
                   <td className="p-1 border-r border-neutral-200 bg-sky-50/30">
-                    <input
+                    <DebouncedInput
                       value={r.kumasKodu}
-                      onChange={(e) => updateRecord(r.id, { kumasKodu: e.target.value.toUpperCase() })}
+                      onChange={(val) => updateRecord(r.id, { kumasKodu: String(val).toUpperCase()  })}
                       className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-black text-sky-900 print:text-[10px]"
                     />
                   </td>
@@ -371,11 +372,11 @@ export function KalanKumasTable() {
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200">
-                    <input
+                    <DebouncedInput
                       type="number"
                       step="any"
                       value={r.birimFiyat ?? ""}
-                      onChange={(e) => updateRecord(r.id, { birimFiyat: e.target.value ? parseFloat(e.target.value) : "" })}
+                      onChange={(val) => updateRecord(r.id, { birimFiyat: String(val) ? parseFloat(String(val)) : ""  })}
                       style={{ fontSize: "clamp(9px, 1.1vw, 14px)" }}
                       className="w-full min-w-[30px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-right font-bold text-neutral-700 tracking-tighter print:text-[9px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
@@ -484,9 +485,9 @@ export function KalanKumasTable() {
               <div className="bg-sky-50/50 p-3 border-b border-neutral-100 flex items-center justify-between">
                 <div>
                   <Label className="text-[10px] font-bold text-sky-700 uppercase tracking-wider block">Kumaş Kodu</Label>
-                  <input
+                  <DebouncedInput
                     value={r.kumasKodu}
-                    onChange={(e) => updateRecord(r.id, { kumasKodu: e.target.value.toUpperCase() })}
+                    onChange={(val) => updateRecord(r.id, { kumasKodu: String(val).toUpperCase()  })}
                     className="w-full bg-transparent focus:outline-none font-black text-sky-900 text-lg mt-0.5"
                     placeholder="örn. ME777"
                   />
@@ -505,10 +506,10 @@ export function KalanKumasTable() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <Label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Depoya Giriş Tarihi</Label>
-                    <input
+                    <DebouncedInput
                       type="date"
                       value={r.depoyaGirisTarihi}
-                      onChange={(e) => updateRecord(r.id, { depoyaGirisTarihi: e.target.value })}
+                      onChange={(val) => updateRecord(r.id, { depoyaGirisTarihi: String(val)  })}
                       className="w-full h-9 px-2 rounded-md border border-neutral-200 focus:outline-none text-sm text-neutral-700"
                     />
                   </div>
@@ -549,18 +550,18 @@ export function KalanKumasTable() {
                 <div className="grid grid-cols-2 gap-3 pt-3 border-t border-neutral-100">
                   <div className="space-y-1">
                     <Label className="text-[10px] font-bold text-orange-600 uppercase tracking-wider">Fatura No</Label>
-                    <input
+                    <DebouncedInput
                       value={r.faturaNo}
-                      onChange={(e) => updateRecord(r.id, { faturaNo: e.target.value.toUpperCase() })}
+                      onChange={(val) => updateRecord(r.id, { faturaNo: String(val).toUpperCase()  })}
                       className="w-full h-9 px-2 rounded-md border border-orange-200 bg-orange-50/30 focus:outline-none focus:bg-orange-50/50 text-sm font-bold text-neutral-800"
                     />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-[10px] font-bold text-orange-600 uppercase tracking-wider">Fatura Tarih</Label>
-                    <input
+                    <DebouncedInput
                       type="date"
                       value={r.faturaTarih}
-                      onChange={(e) => updateRecord(r.id, { faturaTarih: e.target.value })}
+                      onChange={(val) => updateRecord(r.id, { faturaTarih: String(val)  })}
                       className="w-full h-9 px-2 rounded-md border border-orange-200 bg-orange-50/30 focus:outline-none focus:bg-orange-50/50 text-sm text-neutral-800"
                     />
                   </div>
@@ -569,19 +570,19 @@ export function KalanKumasTable() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <Label className="text-[10px] font-bold text-orange-600 uppercase tracking-wider">Malzeme Kodu</Label>
-                    <input
+                    <DebouncedInput
                       value={r.malzemeKodu}
-                      onChange={(e) => updateRecord(r.id, { malzemeKodu: e.target.value.toUpperCase() })}
+                      onChange={(val) => updateRecord(r.id, { malzemeKodu: String(val).toUpperCase()  })}
                       className="w-full h-9 px-2 rounded-md border border-orange-200 bg-orange-50/30 focus:outline-none focus:bg-orange-50/50 text-sm font-bold text-neutral-800"
                     />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-[10px] font-bold text-orange-600 uppercase tracking-wider">Birim Fiyat (₺)</Label>
-                    <input
+                    <DebouncedInput
                       type="number"
                       step="any"
                       value={r.birimFiyat ?? ""}
-                      onChange={(e) => updateRecord(r.id, { birimFiyat: e.target.value ? parseFloat(e.target.value) : "" })}
+                      onChange={(val) => updateRecord(r.id, { birimFiyat: String(val) ? parseFloat(String(val)) : ""  })}
                       className="w-full h-9 px-2 rounded-md border border-orange-200 bg-orange-50/30 focus:outline-none focus:bg-orange-50/50 text-sm font-bold text-neutral-800 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </div>
