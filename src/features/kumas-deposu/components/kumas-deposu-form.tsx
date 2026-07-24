@@ -76,7 +76,7 @@ export function KumasDeposuForm({ record: initialRecord, onClose }: KumasDeposuF
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button type="button" variant="outline" size="icon" onClick={onClose}>
+          <Button type="button" variant="outline" size="icon" onClick={onClose} className="allow-viewer" title="İptal">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>

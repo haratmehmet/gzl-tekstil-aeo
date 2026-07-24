@@ -131,7 +131,7 @@ export function CekmeForm({ initialData, activeSezon, onSave, onCancel }: CekmeF
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button type="button" variant="outline" size="icon" onClick={onCancel}>
+          <Button type="button" variant="outline" size="icon" onClick={onCancel} className="allow-viewer" title="Geri">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
