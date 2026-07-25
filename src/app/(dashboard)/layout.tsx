@@ -60,6 +60,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                            text.includes('kapat') ||
                            text.includes('sırala') ||
                            text.includes('sirala') ||
+                           text.includes('menü') ||
+                           text.includes('menu') ||
                            target.closest('[data-export]') || 
                            target.closest('.export');
       if (isSafeAction) return;

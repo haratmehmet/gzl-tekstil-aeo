@@ -56,7 +56,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           variant="ghost"
           size="icon"
           onClick={onMenuClick}
-          className="md:hidden text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100/50 rounded-lg h-9 w-9"
+          className="allow-viewer md:hidden text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100/50 rounded-lg h-9 w-9"
         >
           <Menu className="h-5 w-5" />
           <span className="sr-only">Menüyü Aç</span>
