@@ -318,11 +318,11 @@ export function BackupClient({ initialLogs }: any) {
                         </Button>
                         {driveId && log.status === "SUCCESS" && (
                           <>
-                            <Button variant="outline" size="sm" asChild>
-                              <a href={`/api/backup/download?fileId=${driveId}&fileName=${log.fileName}`} target="_blank" rel="noreferrer">
+                            <a href={`/api/backup/download?fileId=${driveId}&fileName=${log.fileName}`} target="_blank" rel="noreferrer">
+                              <Button type="button" variant="outline" size="sm">
                                 <Download className="w-4 h-4 mr-1" /> İndir
-                              </a>
-                            </Button>
+                              </Button>
+                            </a>
                             <Button 
                               variant="destructive" 
                               size="sm"
