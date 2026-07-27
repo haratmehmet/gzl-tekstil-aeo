@@ -8,7 +8,21 @@ export async function createBackupLog(action: string, fileName?: string) {
       action,
       status: "IN_PROGRESS",
       fileName,
+      steps: []
     }
+  })
+}
+
+export async function logBackupStep(id: string, message: string) {
+  const log = await prisma.backupLog.findUnique({ where: { id } })
+  if (!log) return
+  
+  const currentSteps = Array.isArray(log.steps) ? log.steps : []
+  const newSteps = [...currentSteps, { time: new Date().toISOString(), message }]
+
+  return await prisma.backupLog.update({
+    where: { id },
+    data: { steps: newSteps }
   })
 }
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { BackupService } from "@/features/backup/services/backup-service";
-import { createBackupLog, updateBackupLog } from "@/features/backup/actions";
+import { createBackupLog, updateBackupLog, logBackupStep } from "@/features/backup/actions";
 
 export async function POST(request: Request) {
   try {
@@ -9,10 +9,7 @@ export async function POST(request: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // Cron isteğine anında cevap dön (Timeout yememek için)
-    // Asıl backup'ı asenkron background task olarak tetikle
     runAsyncBackup();
-
     return NextResponse.json({ success: true, message: "Backup işlemi başlatıldı" });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -27,8 +24,8 @@ async function runAsyncBackup() {
     logId = log.id;
 
     const result = await service.runFullBackup(async (msg) => {
-      // Konsola veya log tablosuna ek detay yazılabilir
       console.log(`[BACKUP CRON] ${msg}`);
+      await logBackupStep(logId, msg);
     });
 
     await updateBackupLog(logId, {

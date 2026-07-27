@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { BackupService } from "@/features/backup/services/backup-service";
-import { createBackupLog, updateBackupLog } from "@/features/backup/actions";
+import { createBackupLog, updateBackupLog, logBackupStep } from "@/features/backup/actions";
 import { requireMutationAuth } from "@/lib/session";
+import prisma from "@/lib/prisma"
 
 export async function POST(request: Request) {
   try {
@@ -11,9 +12,53 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const action = body.action; // "BACKUP", "RESTORE", "LIST"
+    const action = body.action; 
 
     const service = new BackupService();
+
+    if (action === "GET_STATS") {
+      const drive = service.getDriveAuth();
+      let quota = null;
+      try {
+        const quotaRes = await drive.about.get({ fields: "storageQuota" });
+        quota = quotaRes.data.storageQuota;
+      } catch (e) {
+        console.error("Drive quota error", e);
+      }
+
+      const totalBackups = await prisma.backupLog.count({ where: { action: "BACKUP" } });
+      const successfulBackups = await prisma.backupLog.count({ where: { action: "BACKUP", status: "SUCCESS" } });
+      const successRate = totalBackups > 0 ? ((successfulBackups / totalBackups) * 100).toFixed(2) : "0.00";
+      
+      const allSuccess = await prisma.backupLog.findMany({
+        where: { action: "BACKUP", status: "SUCCESS", fileSize: { not: null } },
+        select: { fileSize: true }
+      });
+      let totalSize = 0;
+      allSuccess.forEach(log => {
+        if (log.fileSize && log.fileSize !== "Bilinmiyor") {
+          totalSize += Number(log.fileSize) || 0;
+        }
+      });
+
+      return NextResponse.json({
+        success: true,
+        stats: {
+          totalBackups,
+          successRate,
+          totalSize,
+          quota
+        }
+      });
+    }
+
+    if (action === "GET_LOGS") {
+      const logs = await prisma.backupLog.findMany({
+        orderBy: { startedAt: "desc" },
+        take: 30,
+      });
+      return NextResponse.json({ success: true, logs });
+    }
 
     if (action === "LIST") {
       const list = await service.getBackupsList();
@@ -21,7 +66,6 @@ export async function POST(request: Request) {
     }
 
     if (action === "BACKUP") {
-      // Background execution for Vercel timeout limits
       runAsyncBackup();
       return NextResponse.json({ success: true, message: "Yedekleme arka planda başlatıldı." });
     }
@@ -54,6 +98,7 @@ async function runAsyncBackup() {
 
     const result = await service.runFullBackup(async (msg) => {
       console.log(`[BACKUP ADMIN] ${msg}`);
+      await logBackupStep(logId, msg);
     });
 
     await updateBackupLog(logId, {
@@ -82,6 +127,7 @@ async function runAsyncRestore(fileId: string) {
 
     await service.restoreFromDrive(fileId, async (msg) => {
       console.log(`[RESTORE ADMIN] ${msg}`);
+      await logBackupStep(logId, msg);
     });
 
     await updateBackupLog(logId, {
