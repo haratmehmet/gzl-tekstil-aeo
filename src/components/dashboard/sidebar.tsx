@@ -17,7 +17,8 @@ import {
   Scissors,
   LogOut,
   Ruler,
-  StickyNote
+  StickyNote,
+  Database
 } from "lucide-react"
 
 export type NavigationItem =
@@ -38,6 +39,7 @@ export const navigationItems: NavigationItem[] = [
   { name: "Ürün Takip Föyü", href: "/uretim-takip-foyu", icon: Grid },
   { name: "Genel Üretim Takip", href: "/raporlar", icon: BarChart3 },
   { name: "Ayarlar", href: "/ayarlar", icon: Settings },
+  { name: "Backup Merkezi", href: "/ayarlar/backup", icon: Database },
 ]
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -129,7 +131,7 @@ export function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
           }
 
           // Role based visibility
-          if (item.name === "Ayarlar" && userRole !== "SUPER_ADMIN") {
+          if ((item.name === "Ayarlar" || item.name === "Backup Merkezi") && userRole !== "SUPER_ADMIN") {
             return null;
           }
 

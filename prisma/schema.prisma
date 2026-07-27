@@ -226,3 +226,15 @@ model IsNotu {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model BackupLog {
+  id           String    @id @default(uuid())
+  fileName     String?
+  fileSize     String?
+  status       String    // SUCCESS, FAILED, IN_PROGRESS
+  action       String    // BACKUP, RESTORE, DELETE
+  errorMessage String?
+  durationMs   Int?
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+}
