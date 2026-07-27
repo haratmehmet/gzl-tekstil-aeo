@@ -24,16 +24,24 @@ export class BackupService {
     this.key = Buffer.from(rawKey.padEnd(32, '0').substring(0, 32), "utf-8");
 
     try {
-      let credentials;
-      if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-        credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+      if (process.env.GOOGLE_DRIVE_REFRESH_TOKEN) {
+        const oauth2Client = new google.auth.OAuth2(
+          process.env.GOOGLE_DRIVE_CLIENT_ID,
+          process.env.GOOGLE_DRIVE_CLIENT_SECRET
+        );
+        oauth2Client.setCredentials({ refresh_token: process.env.GOOGLE_DRIVE_REFRESH_TOKEN });
+        this.drive = google.drive({ version: "v3", auth: oauth2Client });
+      } else if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+        const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+        const auth = new google.auth.GoogleAuth({
+          credentials,
+          scopes: ["https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive.readonly"],
+        });
+        this.drive = google.drive({ version: "v3", auth });
+      } else {
+        console.warn("Hiçbir Google Drive yetkilendirme yöntemi bulunamadı.");
+        this.drive = null;
       }
-      
-      const auth = new google.auth.GoogleAuth({
-        credentials,
-        scopes: ["https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive.readonly"],
-      });
-      this.drive = google.drive({ version: "v3", auth });
     } catch (error) {
       console.error("Google Drive Auth Error:", error);
       this.drive = null;
