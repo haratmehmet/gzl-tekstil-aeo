@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { getBackupLogs, getLatestBackupStatus } from "@/features/backup/actions"
 import { BackupClient } from "@/features/backup/components/backup-client"
 
