@@ -14,7 +14,7 @@ import { exportToExcel } from "@/features/cekme-tablosu/utils/export-excel"
 export default function CekmeTablosuPage() {
   const { foyler, isLoaded: isCekmeLoaded, addFoy, updateFoy, deleteFoy } = useCekmeStore()
   const { sheets: takipSheets, isLoaded: isTakipLoaded } = useKumasTakipStore()
-  const [activeFilter, setActiveFilter] = React.useState<string>("SS23 - Academia & Beymen Collection")
+  const [activeFilter, setActiveFilter] = React.useState<string>("Kayıt Yok")
   const [isEditing, setIsEditing] = React.useState(false)
   const [editingFoy, setEditingFoy] = React.useState<CekmeFoyu | null>(null)
 
@@ -38,7 +38,7 @@ export default function CekmeTablosuPage() {
       filters.add(`${s.sezon} - ${group}`)
     })
     
-    if (filters.size === 0) return ["SS23 - Academia & Beymen Collection"]
+    if (filters.size === 0) return ["Kayıt Yok"]
     return Array.from(filters).sort()
   }, [foyler, takipSheets])
 
