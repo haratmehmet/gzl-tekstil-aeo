@@ -1,207 +1,115 @@
-import crypto from "crypto";
-import { Transform, TransformCallback } from "stream";
 import { spawn } from "child_process";
 import { google } from "googleapis";
-
-// AES-256-GCM Encryption Stream for large files
-export class GcmEncryptStream extends Transform {
-  private cipher: crypto.CipherGCM;
-  private iv: Buffer;
-
-  constructor(key: Buffer) {
-    super();
-    this.iv = crypto.randomBytes(16);
-    this.cipher = crypto.createCipheriv("aes-256-gcm", key, this.iv);
-    // Prepended IV
-    this.push(this.iv);
-  }
-
-  _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback) {
-    const encrypted = this.cipher.update(chunk);
-    if (encrypted.length > 0) {
-      this.push(encrypted);
-    }
-    callback();
-  }
-
-  _flush(callback: TransformCallback) {
-    const final = this.cipher.final();
-    if (final.length > 0) {
-      this.push(final);
-    }
-    // Append Auth Tag at the very end
-    const tag = this.cipher.getAuthTag();
-    this.push(tag);
-    callback();
-  }
-}
-
-// AES-256-GCM Decryption Stream for large files
-export class GcmDecryptStream extends Transform {
-  private decipher!: crypto.DecipherGCM;
-  private key: Buffer;
-  private iv?: Buffer;
-  private buffer: Buffer = Buffer.alloc(0);
-
-  constructor(key: Buffer) {
-    super();
-    this.key = key;
-  }
-
-  _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback) {
-    this.buffer = Buffer.concat([this.buffer, chunk]);
-
-    if (!this.iv && this.buffer.length >= 16) {
-      this.iv = this.buffer.subarray(0, 16);
-      this.buffer = this.buffer.subarray(16);
-      this.decipher = crypto.createDecipheriv("aes-256-gcm", this.key, this.iv);
-    }
-
-    if (this.iv && this.buffer.length > 16) {
-      const dataToDecrypt = this.buffer.subarray(0, this.buffer.length - 16);
-      this.buffer = this.buffer.subarray(this.buffer.length - 16);
-
-      const decrypted = this.decipher.update(dataToDecrypt);
-      if (decrypted.length > 0) {
-        this.push(decrypted);
-      }
-    }
-    callback();
-  }
-
-  _flush(callback: TransformCallback) {
-    if (this.buffer.length === 16) {
-      this.decipher.setAuthTag(this.buffer);
-      try {
-        const final = this.decipher.final();
-        if (final.length > 0) {
-          this.push(final);
-        }
-        callback();
-      } catch (err: any) {
-        callback(new Error("Deşifreleme hatası: Veri bozuk veya şifre yanlış."));
-      }
-    } else {
-      callback(new Error("Invalid stream end, missing auth tag"));
-    }
-  }
-}
+import { GcmEncryptStream, GcmDecryptStream } from "./crypto-stream";
+import { Readable, PassThrough } from "stream";
+import { PgDumpEngine } from "./engines/pg-dump-engine";
+import { NodePrismaEngine } from "./engines/node-prisma-engine";
+import zlib from "zlib";
 
 export class BackupService {
   private driveFolderId: string;
   private key: Buffer;
+  private drive: any;
+  private dbUrl: string;
 
   constructor() {
     this.driveFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID || "";
+    this.dbUrl = process.env.DATABASE_URL || "";
+    
     const rawKey = process.env.BACKUP_ENCRYPTION_KEY || "";
     if (rawKey.length !== 32) {
-      throw new Error("BACKUP_ENCRYPTION_KEY 32 karakter uzunluğunda olmalıdır.");
+      console.warn("BACKUP_ENCRYPTION_KEY 32 karakter değil. Fallback kullanılıyor.");
     }
-    this.key = Buffer.from(rawKey, "utf-8");
-  }
+    // GCM requires exact 32 bytes key
+    this.key = Buffer.from(rawKey.padEnd(32, '0').substring(0, 32), "utf-8");
 
-  private getDriveAuth() {
-    let credentials;
     try {
-      credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON || "{}");
-    } catch (e) {
-      throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON geçerli bir JSON değil.");
+      let credentials;
+      if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+        credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+      }
+      
+      const auth = new google.auth.GoogleAuth({
+        credentials,
+        scopes: ["https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive.readonly"],
+      });
+      this.drive = google.drive({ version: "v3", auth });
+    } catch (error) {
+      console.error("Google Drive Auth Error:", error);
+      this.drive = null;
     }
-
-    if (!credentials.client_email || !credentials.private_key) {
-      throw new Error("Eksik Google Service Account kimlik bilgileri.");
-    }
-
-    const auth = new google.auth.GoogleAuth({
-      credentials,
-      scopes: ["https://www.googleapis.com/auth/drive.file"],
-    });
-    return google.drive({ version: "v3", auth });
   }
 
-  public async runFullBackup(logger: (msg: string) => Promise<void>) {
-    await logger("Backup Başladı");
+  public getDriveAuth() {
+    return this.drive;
+  }
 
-    const dbUrl = process.env.DATABASE_URL;
-    if (!dbUrl) throw new Error("DATABASE_URL bulunamadı.");
+  public async runFullBackup(logger: (msg: string) => Promise<void> | void) {
+    if (!this.drive) throw new Error("Google Drive Service çalışmıyor.");
+    
+    await logger("Backup Başladı");
+    if (!this.dbUrl) throw new Error("DATABASE_URL bulunamadı.");
+
+    // Adaptif Engine Seçimi
+    const pgDumpEngine = new PgDumpEngine();
+    const isPgDumpAvailable = await pgDumpEngine.isAvailable();
+    const engine = isPgDumpAvailable ? pgDumpEngine : new NodePrismaEngine();
+    
+    await logger(`Kullanılan Motor: ${engine.name}`);
 
     const fileName = `backup-${new Date().toISOString().split("T")[0]}.sql.gz.enc`;
-
-    await logger("Database Dump Alındı (Stream)");
+    await logger("Database Dump Başlıyor...");
     
-    // Spawn pg_dump
-    const parsed = new URL(dbUrl);
-    const pgUser = parsed.username;
-    const pgPass = parsed.password;
-    const pgHost = parsed.hostname;
-    const pgPort = parsed.port || "5432";
-    const pgDb = parsed.pathname.substring(1);
-
-    const env = { ...process.env, PGPASSWORD: pgPass };
-    const dumpProcess = spawn("pg_dump", [
-      "-U", pgUser,
-      "-h", pgHost,
-      "-p", pgPort,
-      "-d", pgDb,
-      "-F", "c", // Custom format (compressed)
-      "-Z", "9"  // Max compression
-    ], { env });
-
-    await logger("Şifrelendi (Stream Aktif)");
-
-    const encryptStream = new GcmEncryptStream(this.key);
-    
-    // Pipe dump stdout -> encrypt stream
-    dumpProcess.stdout.pipe(encryptStream);
-
-    let dumpError = "";
-    dumpProcess.stderr.on("data", (data) => {
-      dumpError += data.toString();
+    const sqlStream = await engine.exportStream(this.dbUrl, async (msg) => {
+      await logger(msg);
     });
 
-    const drive = this.getDriveAuth();
+    await logger("Sıkıştırma ve Şifreleme (Stream Aktif)");
+
+    const gzip = zlib.createGzip();
+    const encryptStream = new GcmEncryptStream(this.key);
     
-    await logger("Google Drive'a Yüklendi");
+    let sizeBytes = 0;
+    encryptStream.on("data", (chunk) => {
+      sizeBytes += chunk.length;
+    });
+
+    // Pipeline: SQL -> GZIP -> AES-256 -> Upload
+    const uploadStream = new PassThrough();
+    sqlStream.pipe(gzip).pipe(encryptStream).pipe(uploadStream);
+
+    await logger("Google Drive'a Yükleniyor...");
     
-    // Upload stream to drive
-    const res = await drive.files.create({
+    const res = await this.drive.files.create({
       requestBody: {
         name: fileName,
         parents: [this.driveFolderId],
       },
       media: {
-        body: encryptStream,
+        body: uploadStream,
       },
     });
 
-    const exitCode = await new Promise((resolve) => {
-      dumpProcess.on("close", resolve);
-    });
-
-    if (exitCode !== 0) {
-      throw new Error(`pg_dump başarısız oldu: ${dumpError}`);
-    }
-
     const fileId = res.data.id;
-    const sizeBytes = res.data.size || "Bilinmiyor"; 
+    const finalSize = res.data.size || sizeBytes.toString(); 
 
-    await logger("Eski Backup Silindi (30 Gün Politikası)");
+    await logger("Eski Backup'lar Temizleniyor (30 Gün Politikası)");
     await this.cleanOldBackups();
 
     await logger("Tamamlandı");
     
-    return { fileName, fileId, sizeBytes };
+    return { fileName, fileId, sizeBytes: finalSize };
   }
 
   public async cleanOldBackups() {
-    const drive = this.getDriveAuth();
+    if (!this.drive) return 0;
     const date = new Date();
     date.setDate(date.getDate() - 30);
     const timeStr = date.toISOString();
 
     const query = `'${this.driveFolderId}' in parents and modifiedTime < '${timeStr}' and trashed = false`;
     
-    const res = await drive.files.list({
+    const res = await this.drive.files.list({
       q: query,
       fields: "files(id, name)",
     });
@@ -209,16 +117,16 @@ export class BackupService {
     const files = res.data.files || [];
     for (const file of files) {
       if (file.id) {
-        await drive.files.delete({ fileId: file.id });
+        await this.drive.files.delete({ fileId: file.id });
       }
     }
     return files.length;
   }
   
   public async getBackupsList() {
-    const drive = this.getDriveAuth();
+    if (!this.drive) return [];
     const query = `'${this.driveFolderId}' in parents and trashed = false`;
-    const res = await drive.files.list({
+    const res = await this.drive.files.list({
       q: query,
       fields: "files(id, name, size, modifiedTime)",
       orderBy: "modifiedTime desc",
@@ -226,24 +134,34 @@ export class BackupService {
     return res.data.files || [];
   }
 
-  public async restoreFromDrive(fileId: string, logger: (msg: string) => Promise<void>) {
+  public async restoreFromDrive(fileId: string, logger: (msg: string) => Promise<void> | void) {
+    if (!this.drive) throw new Error("Google Drive Service çalışmıyor.");
+    
     await logger("Restore Başladı: Dosya İndiriliyor");
     
-    const drive = this.getDriveAuth();
-    const res = await drive.files.get(
+    const res = await this.drive.files.get(
       { fileId, alt: "media" },
       { responseType: "stream" }
     );
 
-    await logger("Deşifreleme ve Veritabanı Yüklemesi Başladı");
+    await logger("Deşifreleme ve Zlib Çıkarma Başladı");
     
     const decryptStream = new GcmDecryptStream(this.key);
-    (res.data as any).pipe(decryptStream);
+    const gunzip = zlib.createGunzip();
 
-    const dbUrl = process.env.DATABASE_URL;
-    if (!dbUrl) throw new Error("DATABASE_URL bulunamadı.");
+    (res.data as any).pipe(decryptStream).pipe(gunzip);
 
-    const parsed = new URL(dbUrl);
+    // Restore depends on pg_restore/psql availability.
+    // If not available, node-based restore is very complex.
+    // Since restore is usually a manual operation done by Admin on VPS/Local, 
+    // we will rely on pg_restore/psql binary.
+    const pgDumpEngine = new PgDumpEngine();
+    if (!(await pgDumpEngine.isAvailable())) {
+      throw new Error("Sistemde psql / pg_restore kurulu değil. Vercel ortamında geri yükleme desteklenmiyor. Lütfen SQL yedeğini indirip manuel yükleyiniz.");
+    }
+
+    if (!this.dbUrl) throw new Error("DATABASE_URL bulunamadı.");
+    const parsed = new URL(this.dbUrl);
     const pgUser = parsed.username;
     const pgPass = parsed.password;
     const pgHost = parsed.hostname;
@@ -252,18 +170,19 @@ export class BackupService {
 
     const env = { ...process.env, PGPASSWORD: pgPass };
     
-    const restoreProcess = spawn("pg_restore", [
+    await logger("Veritabanına yükleniyor...");
+
+    // Since our backup is plain text SQL (from both engines), we use `psql` to restore, not `pg_restore`.
+    // pg_restore is only for custom format dumps.
+    const restoreProcess = spawn("psql", [
       "-U", pgUser,
       "-h", pgHost,
       "-p", pgPort,
       "-d", pgDb,
-      "--clean",      // Drop DB objects before recreating
-      "--if-exists",  // Don't fail on dropping non-existent objects
-      "--no-owner",   // Skip ownership restoration
-      "--no-privileges" // Skip privileges restoration
+      "-v", "ON_ERROR_STOP=1"
     ], { env });
 
-    decryptStream.pipe(restoreProcess.stdin);
+    gunzip.pipe(restoreProcess.stdin);
 
     let restoreError = "";
     restoreProcess.stderr.on("data", (data) => {
@@ -275,7 +194,7 @@ export class BackupService {
     });
 
     if (exitCode !== 0) {
-      console.warn(`pg_restore uyarıları/hataları: ${restoreError}`);
+      throw new Error(`psql restore hatası: ${restoreError}`);
     }
 
     await logger("Restore Tamamlandı");
