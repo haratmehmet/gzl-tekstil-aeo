@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GZL Yedek Çözücü</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; color: #1f2937; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); width: 100%; max-width: 500px; }
+        h1 { font-size: 1.5rem; margin-top: 0; margin-bottom: 1.5rem; color: #111827; text-align: center; }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
+        input[type="file"], input[type="password"] { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+        button { width: 100%; background-color: #2563eb; color: white; border: none; padding: 0.75rem; border-radius: 6px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background-color 0.2s; margin-top: 1rem; }
+        button:hover { background-color: #1d4ed8; }
+        button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        #status { margin-top: 1rem; padding: 1rem; border-radius: 6px; font-size: 0.875rem; display: none; }
+        .success { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .info { background-color: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>GZL Yedek Çözücü 🛡️</h1>
+    
+    <div class="form-group">
+        <label for="fileInput">1. Şifreli Yedek Dosyasını Seçin (.enc)</label>
+        <input type="file" id="fileInput" accept=".enc" />
+    </div>
+
+    <div class="form-group">
+        <label for="password">2. Güvenlik Şifreniz (32 Karakter)</label>
+        <input type="password" id="password" placeholder="BACKUP_ENCRYPTION_KEY şifrenizi girin..." />
+    </div>
+
+    <button id="decryptBtn">Şifreyi Çöz ve SQL Olarak İndir</button>
+
+    <div id="status"></div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const passwordInput = document.getElementById('password');
+    const decryptBtn = document.getElementById('decryptBtn');
+    const statusDiv = document.getElementById('status');
+
+    function showStatus(message, type) {
+        statusDiv.textContent = message;
+        statusDiv.className = type;
+        statusDiv.style.display = 'block';
+    }
+
+    async function decompressGzip(buffer) {
+        // Modern browsers support DecompressionStream
+        try {
+            const ds = new DecompressionStream('gzip');
+            const writer = ds.writable.getWriter();
+            writer.write(buffer);
+            writer.close();
+            
+            const reader = ds.readable.getReader();
+            const chunks = [];
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+            }
+            
+            const totalLength = chunks.reduce((acc, val) => acc + val.length, 0);
+            const result = new Uint8Array(totalLength);
+            let offset = 0;
+            for (let chunk of chunks) {
+                result.set(chunk, offset);
+                offset += chunk.length;
+            }
+            return result;
+        } catch (e) {
+            throw new Error("Sıkıştırma çözülemedi (GZIP hatası). Dosya bozuk olabilir.");
+        }
+    }
+
+    decryptBtn.addEventListener('click', async () => {
+        const file = fileInput.files[0];
+        let rawKey = passwordInput.value.trim();
+
+        if (!file) {
+            return showStatus('Lütfen bir yedek dosyası seçin.', 'error');
+        }
+        if (!rawKey) {
+            return showStatus('Lütfen şifrenizi girin.', 'error');
+        }
+
+        decryptBtn.disabled = true;
+        showStatus('İşlem yapılıyor, lütfen bekleyin...', 'info');
+
+        try {
+            // Şifreyi 32 karaktere tamamlama (Node.js ile aynı mantık)
+            if (rawKey.length !== 32) {
+                rawKey = rawKey.padEnd(32, '0').substring(0, 32);
+            }
+
+            const encoder = new TextEncoder();
+            const keyData = encoder.encode(rawKey);
+
+            // Import Key for Web Crypto
+            const cryptoKey = await window.crypto.subtle.importKey(
+                "raw",
+                keyData,
+                { name: "AES-GCM" },
+                false,
+                ["decrypt"]
+            );
+
+            // Read the entire file
+            const arrayBuffer = await file.arrayBuffer();
+            const dataBytes = new Uint8Array(arrayBuffer);
+
+            if (dataBytes.length < 32) {
+                throw new Error("Dosya boyutu çok küçük, geçerli bir yedek dosyası değil.");
+            }
+
+            // Extract IV (First 16 bytes)
+            const iv = dataBytes.slice(0, 16);
+            
+            // Ciphertext + AuthTag (Rest of the file)
+            // Web Crypto expects the Auth Tag at the very end of the ciphertext, which is exactly how Node.js creates it.
+            const cipherData = dataBytes.slice(16);
+
+            // Decrypt
+            let decryptedBuffer;
+            try {
+                decryptedBuffer = await window.crypto.subtle.decrypt(
+                    {
+                        name: "AES-GCM",
+                        iv: iv
+                    },
+                    cryptoKey,
+                    cipherData
+                );
+            } catch (e) {
+                throw new Error("Şifre yanlış veya dosya bozulmuş!");
+            }
+
+            showStatus('Şifre çözüldü! Gzip sıkıştırması açılıyor...', 'info');
+
+            // Decompress
+            const sqlBytes = await decompressGzip(new Uint8Array(decryptedBuffer));
+
+            // Create Download Link
+            const blob = new Blob([sqlBytes], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.name.replace(".enc", "").replace(".gz", "");
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showStatus('Başarılı! Çözülmüş SQL dosyası indiriliyor.', 'success');
+
+        } catch (error) {
+            showStatus('HATA: ' + error.message, 'error');
+        } finally {
+            decryptBtn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>
