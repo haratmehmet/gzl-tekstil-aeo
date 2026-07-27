@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { Transform } from "stream";
+import { Transform, TransformCallback } from "stream";
 import { spawn } from "child_process";
 import { google } from "googleapis";
 
@@ -16,7 +16,7 @@ export class GcmEncryptStream extends Transform {
     this.push(this.iv);
   }
 
-  _transform(chunk: any, encoding: BufferEncoding, callback: crypto.TransformCallback) {
+  _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback) {
     const encrypted = this.cipher.update(chunk);
     if (encrypted.length > 0) {
       this.push(encrypted);
@@ -24,7 +24,7 @@ export class GcmEncryptStream extends Transform {
     callback();
   }
 
-  _flush(callback: crypto.TransformCallback) {
+  _flush(callback: TransformCallback) {
     const final = this.cipher.final();
     if (final.length > 0) {
       this.push(final);
@@ -48,7 +48,7 @@ export class GcmDecryptStream extends Transform {
     this.key = key;
   }
 
-  _transform(chunk: any, encoding: BufferEncoding, callback: crypto.TransformCallback) {
+  _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback) {
     this.buffer = Buffer.concat([this.buffer, chunk]);
 
     if (!this.iv && this.buffer.length >= 16) {
@@ -69,7 +69,7 @@ export class GcmDecryptStream extends Transform {
     callback();
   }
 
-  _flush(callback: crypto.TransformCallback) {
+  _flush(callback: TransformCallback) {
     if (this.buffer.length === 16) {
       this.decipher.setAuthTag(this.buffer);
       try {
