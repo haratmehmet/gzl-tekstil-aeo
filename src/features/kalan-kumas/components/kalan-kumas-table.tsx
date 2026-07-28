@@ -32,7 +32,7 @@ function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRow
           const newTotal = parseFloat(valStr)
           
           const f = typeof record.birimFiyat === "number" ? record.birimFiyat : 0
-          const mStr = typeof record.kumasMetraji === 'string' ? record.kumasMetraji.replace(',', '.').replace(/[^\d.]/g, '') : '0'
+          const mStr = typeof record.kumasMetraji === 'string' ? record.kumasMetraji.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '') : '0'
           const m = parseFloat(mStr) || 0
           
           const isKg = typeof record.kumasMetraji === 'string' ? record.kumasMetraji.toLowerCase().includes("kg") : false
@@ -96,7 +96,7 @@ function MetrajInput({ record, updateRecord, className }: { record: any, updateR
           unit = isKgRecord ? "Kg" : "Mt"
         }
 
-        const cleaned = val.replace(',', '.').replace(/[^\d.]/g, '')
+        const cleaned = val.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '')
         const num = parseFloat(cleaned)
         
         if (!isNaN(num)) {
@@ -149,7 +149,7 @@ export function KalanKumasTable() {
   const parseNumber = (val: string | number) => {
     if (typeof val === "number") return val
     if (!val) return 0
-    const cleaned = val.replace(',', '.').replace(/[^0-9.]/g, '')
+    const cleaned = val.replace(/\./g, '').replace(',', '.').replace(/[^0-9.-]/g, '')
     return parseFloat(cleaned) || 0
   }
 

@@ -74,14 +74,15 @@ export function useKalanKumas() {
       const existing = records.find(r => r.id === id)
       if (!existing) return
 
-      // Optimistic update kaldırıldı, taze veri çekilecek
-      await fetch("/api/kalan-kumas", {
+      // Optimistic update ile anında arayüzü güncelle (aşırı yavaşlık sorunu için)
+      setRecords(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r))
+
+      fetch("/api/kalan-kumas", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...existing, ...updates }),
-      })
+      }).catch(err => console.error("Arka plan senkronizasyon hatası:", err))
       
-      await fetchRecords()
     } catch (error) {
       console.error("Update error:", error)
     }
