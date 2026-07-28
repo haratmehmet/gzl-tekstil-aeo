@@ -3,6 +3,8 @@ import { getDashboardStats } from "@/features/dashboard/actions"
 
 
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const statsRes = await getDashboardStats()
   const initialData = statsRes.success && statsRes.data ? statsRes.data : { totalTakipFoyu: 0, totalMt: "0", activeSeasonsCount: 0 }
