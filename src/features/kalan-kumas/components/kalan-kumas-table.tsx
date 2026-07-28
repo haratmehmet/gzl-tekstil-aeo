@@ -5,7 +5,7 @@ import { useKalanKumas } from "../kalan-kumas-store"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Plus, Trash2, DownloadCloud, FileSpreadsheet, Printer, ArrowUpDown, StickyNote } from "lucide-react"
+import { Plus, Trash2, DownloadCloud, FileSpreadsheet, Printer, ArrowUpDown, StickyNote, AlertTriangle } from "lucide-react"
 import { DebouncedInput } from "@/components/ui/debounced-input"
 import * as ExcelJS from "exceljs"
 
@@ -157,6 +157,7 @@ export function KalanKumasTable() {
   const { records, updateRecord, deleteRecord, addEmptyRecord, syncPastSheets } = useKalanKumas()
   const [sortConfig, setSortConfig] = React.useState<{ key: "faturaTarih" | "depoyaGirisTarihi", direction: "asc" | "desc" } | null>(null)
   const [expandedNotes, setExpandedNotes] = React.useState<Record<string, boolean>>({})
+  const [deleteConfirmId, setDeleteConfirmId] = React.useState<string | null>(null)
 
   const sortedRecords = React.useMemo(() => {
     let sortableItems = [...records]
@@ -464,7 +465,7 @@ export function KalanKumasTable() {
                     </div>
                   </td>
                   <td className="p-1 text-center align-middle print:hidden">
-                    <button onClick={() => deleteRecord(r.id)} className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
+                    <button onClick={() => setDeleteConfirmId(r.id)} className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </td>
@@ -570,7 +571,7 @@ export function KalanKumasTable() {
                   <button onClick={() => setExpandedNotes(p => ({ ...p, [r.id]: !p[r.id] }))} className={`p-2 rounded-lg transition-colors ${r.notlar?.aciklama || r.notlar?.kesilenMt || r.notlar?.kalanMt ? 'text-emerald-600 bg-emerald-100 hover:bg-emerald-200' : 'text-sky-500 hover:text-sky-600 hover:bg-sky-100'}`}>
                     <StickyNote className="h-4 w-4" />
                   </button>
-                  <button onClick={() => deleteRecord(r.id)} className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                  <button onClick={() => setDeleteConfirmId(r.id)} className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -697,6 +698,44 @@ export function KalanKumasTable() {
         </div>
 
       </CardContent>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 bg-neutral-900/40 backdrop-blur-[2px] flex items-center justify-center z-[100] animate-in fade-in duration-200">
+          <div className="bg-white border border-neutral-200 rounded-2xl p-5 max-w-sm w-full mx-4 shadow-xl animate-in zoom-in-95 duration-200">
+            <div className="flex gap-3">
+              <div className="h-10 w-10 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-5 w-5 text-rose-500" />
+              </div>
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <h4 className="text-sm font-bold text-neutral-800">Kaydı Silmek İstiyor musunuz?</h4>
+                <p className="text-xs text-neutral-500 leading-relaxed text-left">
+                  Bu kaydı kalıcı olarak silmek üzeresiniz. Emin misiniz?
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end mt-5">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmId(null)}
+                className="h-8 px-3 text-xs font-semibold rounded-xl border border-neutral-200 hover:bg-neutral-50 transition-colors"
+              >
+                Vazgeç
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteRecord(deleteConfirmId)
+                  setDeleteConfirmId(null)
+                }}
+                className="h-8 px-3 text-xs font-semibold rounded-xl bg-rose-600 hover:bg-rose-500 text-white transition-colors"
+              >
+                Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   )
 }

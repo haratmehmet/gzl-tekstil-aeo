@@ -4,7 +4,7 @@ import React from "react"
 import { useKumasDeposu, KumasDeposuRecord } from "../kumas-deposu-store"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Download } from "lucide-react"
+import { Download, AlertTriangle, Trash2 } from "lucide-react"
 import { exportToExcel } from "../utils/export-excel"
 
 interface KumasDeposuListProps {
@@ -12,7 +12,8 @@ interface KumasDeposuListProps {
 }
 
 export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
-  const { records, isLoaded } = useKumasDeposu()
+  const { records, isLoaded, deleteRecord } = useKumasDeposu()
+  const [deleteConfirmId, setDeleteConfirmId] = React.useState<string | null>(null)
 
   if (!isLoaded) {
     return <div className="text-sm text-neutral-500 animate-pulse">Yükleniyor...</div>
@@ -71,6 +72,7 @@ export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
                 <th className="bg-orange-200 text-orange-950 px-2 py-3 border border-neutral-300">HARCANAN METRAJ</th>
                 <th className="bg-orange-200 text-orange-950 px-2 py-3 border border-neutral-300">AÇIKLAMA</th>
                 <th className="bg-yellow-400 text-yellow-950 px-2 py-3 border border-neutral-300">NET METRAJ</th>
+                <th className="bg-rose-100 text-rose-950 px-2 py-3 border border-neutral-300">İŞLEM</th>
               </tr>
             </thead>
             <tbody className="text-[11px] text-neutral-800 divide-y divide-neutral-200 whitespace-nowrap">
@@ -107,13 +109,26 @@ export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
 
                   {/* YELLOW COLUMN */}
                   <td className={`p-2 border border-neutral-300 ${yellowBg} text-center font-bold text-neutral-900 transition-all duration-300 ${passiveClass}`}>{r.netMetraj}</td>
+                  
+                  {/* DELETE COLUMN */}
+                  <td className={`p-2 border border-neutral-300 bg-white text-center`}>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDeleteConfirmId(r.id)
+                      }} 
+                      className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors inline-block"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </td>
                 </tr>
                 );
               })}
 
               {(!Array.isArray(records) || records.length === 0) && (
                 <tr>
-                  <td colSpan={12} className="text-center py-8 text-neutral-400 font-normal">
+                  <td colSpan={13} className="text-center py-8 text-neutral-400 font-normal">
                     Henüz depo kaydı bulunmuyor. Kumaş Takip sayfasından föy kaydettiğinizde buraya otomatik düşecektir.
                   </td>
                 </tr>
@@ -168,8 +183,20 @@ export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
               </div>
 
               <div className={`pt-3 border-t border-yellow-200 ${isChild ? "bg-emerald-200/50" : "bg-yellow-50/50"} -mx-4 -mb-4 p-4 rounded-b-lg flex justify-between items-center transition-all duration-300 ${passiveClass}`}>
-                <span className="text-xs font-black text-yellow-900 uppercase">Net Kalan</span>
-                <span className="text-lg font-black text-neutral-900">{r.netMetraj}</span>
+                <div>
+                  <span className="text-xs font-black text-yellow-900 uppercase block mb-1">Net Kalan</span>
+                  <span className="text-lg font-black text-neutral-900 leading-none">{r.netMetraj}</span>
+                </div>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setDeleteConfirmId(r.id)
+                  }} 
+                  className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1.5 bg-white shadow-sm border border-neutral-200"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="text-xs font-bold">SİL</span>
+                </button>
               </div>
             </div>
             );
@@ -183,6 +210,44 @@ export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
         </div>
       </CardContent>
     </Card>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 bg-neutral-900/40 backdrop-blur-[2px] flex items-center justify-center z-[100] animate-in fade-in duration-200">
+          <div className="bg-white border border-neutral-200 rounded-2xl p-5 max-w-sm w-full mx-4 shadow-xl animate-in zoom-in-95 duration-200">
+            <div className="flex gap-3">
+              <div className="h-10 w-10 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-5 w-5 text-rose-500" />
+              </div>
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <h4 className="text-sm font-bold text-neutral-800">Kaydı Silmek İstiyor musunuz?</h4>
+                <p className="text-xs text-neutral-500 leading-relaxed text-left">
+                  Bu depo kaydı kalıcı olarak silinecektir. Emin misiniz?
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end mt-5">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmId(null)}
+                className="h-8 px-3 text-xs font-semibold rounded-xl border border-neutral-200 hover:bg-neutral-50 transition-colors"
+              >
+                Vazgeç
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteRecord(deleteConfirmId)
+                  setDeleteConfirmId(null)
+                }}
+                className="h-8 px-3 text-xs font-semibold rounded-xl bg-rose-600 hover:bg-rose-500 text-white transition-colors"
+              >
+                Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -177,6 +177,7 @@ export default function CekmeTablosuPage() {
             <CekmeList
               foyler={filteredFoyler}
               onEdit={handleEdit}
+              onDelete={deleteFoy}
             />
           </div>
         </div>

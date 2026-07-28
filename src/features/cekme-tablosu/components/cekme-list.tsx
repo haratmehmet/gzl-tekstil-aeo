@@ -2,13 +2,16 @@
 
 import * as React from "react"
 import { CekmeFoyu } from "../types"
+import { Trash2, AlertTriangle } from "lucide-react"
 
 interface CekmeListProps {
   foyler: CekmeFoyu[]
   onEdit: (foy: CekmeFoyu) => void
+  onDelete: (id: string) => void
 }
 
-export function CekmeList({ foyler, onEdit }: CekmeListProps) {
+export function CekmeList({ foyler, onEdit, onDelete }: CekmeListProps) {
+  const [deleteConfirmId, setDeleteConfirmId] = React.useState<string | null>(null)
   if (foyler.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-12 bg-white border border-neutral-200 rounded-xl shadow-sm">
@@ -55,6 +58,7 @@ export function CekmeList({ foyler, onEdit }: CekmeListProps) {
                   <th className={`${thStyle} ${fabricColors[i % 3]}`}>BOY ÇEKME<br/>%DİR</th>
                 </React.Fragment>
               ))}
+              <th className={`${thStyle} bg-rose-100`}>İŞLEM</th>
             </tr>
           </thead>
           <tbody>
@@ -95,6 +99,17 @@ export function CekmeList({ foyler, onEdit }: CekmeListProps) {
                     )
                   }
                 })}
+                <td className={`${tdStyle} px-0`}>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setDeleteConfirmId(foy.id)
+                    }} 
+                    className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors inline-block"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -140,6 +155,18 @@ export function CekmeList({ foyler, onEdit }: CekmeListProps) {
                   <div className="text-[10px] font-bold text-neutral-400 uppercase mb-0.5">Etiket</div>
                   <div className="text-xs font-medium text-neutral-700">{foy.etiket || "-"}</div>
                 </div>
+                <div className="col-span-2 mt-2 pt-2 border-t border-neutral-100 flex justify-end">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setDeleteConfirmId(foy.id)
+                    }} 
+                    className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors flex items-center gap-1.5"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="text-xs font-bold">SİL</span>
+                  </button>
+                </div>
               </div>
 
               {/* Alt Kısım: Kumaş Detayları */}
@@ -180,6 +207,44 @@ export function CekmeList({ foyler, onEdit }: CekmeListProps) {
           ))}
         </div>
       </div>
+      
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 bg-neutral-900/40 backdrop-blur-[2px] flex items-center justify-center z-[100] animate-in fade-in duration-200">
+          <div className="bg-white border border-neutral-200 rounded-2xl p-5 max-w-sm w-full mx-4 shadow-xl animate-in zoom-in-95 duration-200">
+            <div className="flex gap-3">
+              <div className="h-10 w-10 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-5 w-5 text-rose-500" />
+              </div>
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <h4 className="text-sm font-bold text-neutral-800">Kaydı Silmek İstiyor musunuz?</h4>
+                <p className="text-xs text-neutral-500 leading-relaxed text-left">
+                  Bu çekme föyü kalıcı olarak silinecektir. Emin misiniz?
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end mt-5">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmId(null)}
+                className="h-8 px-3 text-xs font-semibold rounded-xl border border-neutral-200 hover:bg-neutral-50 transition-colors"
+              >
+                Vazgeç
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onDelete(deleteConfirmId)
+                  setDeleteConfirmId(null)
+                }}
+                className="h-8 px-3 text-xs font-semibold rounded-xl bg-rose-600 hover:bg-rose-500 text-white transition-colors"
+              >
+                Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
