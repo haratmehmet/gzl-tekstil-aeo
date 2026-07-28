@@ -9,6 +9,40 @@ import { Plus, Trash2, DownloadCloud, FileSpreadsheet, Printer, ArrowUpDown, Sti
 import { DebouncedInput } from "@/components/ui/debounced-input"
 import * as ExcelJS from "exceljs"
 
+const formatWhileTyping = (val: string) => {
+  if (!val) return "";
+  
+  const trailingMatch = val.match(/[\sA-Za-z]+$/);
+  const trailing = trailingMatch ? trailingMatch[0] : "";
+  
+  let numPart = val;
+  if (trailing) {
+    numPart = val.slice(0, -trailing.length);
+  }
+  
+  let clean = numPart.replace(/\./g, '').replace(/[^\d,]/g, '');
+  
+  const parts = clean.split(',');
+  if (parts.length > 2) {
+    clean = parts[0] + ',' + parts.slice(1).join('');
+  }
+  
+  const [intPart, decPart] = clean.split(',');
+  
+  let formattedInt = intPart || "";
+  if (formattedInt) {
+    formattedInt = formattedInt.replace(/^0+(?=\d)/, '');
+    formattedInt = formattedInt.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+  
+  let result = formattedInt;
+  if (clean.includes(',')) {
+    result = `${formattedInt},${decPart !== undefined ? decPart : ""}`;
+  }
+  
+  return result + trailing;
+}
+
 function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRowTotal: any, updateRecord: any }) {
   const computedTotal = getRowTotal(record.kumasMetraji, record.birimFiyat)
   const displayVal = computedTotal === 0 && !record.kumasMetraji ? "" : computedTotal.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 4 })
@@ -20,7 +54,7 @@ function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRow
       type="text"
       value={localVal !== null ? localVal : displayVal}
       onChange={(e) => {
-        setLocalVal(e.target.value)
+        setLocalVal(formatWhileTyping(e.target.value))
       }}
       onBlur={() => {
         if (localVal === null) return
@@ -74,7 +108,7 @@ function MetrajInput({ record, updateRecord, className }: { record: any, updateR
     <input
       type="text"
       value={localVal !== null ? localVal : displayVal}
-      onChange={(e) => setLocalVal(e.target.value)}
+      onChange={(e) => setLocalVal(formatWhileTyping(e.target.value))}
       onFocus={() => {
         const val = record.kumasMetraji || ""
         setLocalVal(val.replace(/\s*(Mt|Kg|mt|kg)$/i, ''))
