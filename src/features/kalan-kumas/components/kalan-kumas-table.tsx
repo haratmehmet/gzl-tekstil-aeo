@@ -28,8 +28,8 @@ function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRow
           const isKg = record.kumasMetraji.toLowerCase().includes("kg")
           updateRecord(record.id, { kumasMetraji: `0 ${isKg ? "Kg" : "Mt"}` })
         } else {
-          const valStr = localVal.replace(',', '.')
-          const newTotal = parseFloat(valStr)
+          const cleaned = localVal.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '')
+          const newTotal = parseFloat(cleaned)
           
           const f = typeof record.birimFiyat === "number" ? record.birimFiyat : 0
           const mStr = typeof record.kumasMetraji === 'string' ? record.kumasMetraji.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '') : '0'
