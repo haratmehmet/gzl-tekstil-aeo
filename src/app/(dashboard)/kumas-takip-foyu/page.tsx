@@ -58,10 +58,19 @@ export default function KumasTakipFoyuPage() {
   }
 
   // Save or update sheet
-  const handleSaveSheet = (savedSheet: KumasTakipSheet) => {
+  const handleSaveSheet = async (savedSheet: KumasTakipSheet) => {
     const isNew = !sheets.some(s => s.id === savedSheet.id)
-    saveSheet(savedSheet)
-    setSelectedSheet(savedSheet)
+    
+    // Server'a kaydet ve dönen gerçek kaydı al (doğru UUID ile)
+    const serverRecord = await saveSheet(savedSheet)
+    
+    // Server'dan dönen gerçek kaydı selectedSheet olarak kullan
+    // Bu sayede bir sonraki güncelleme doğru ID ile PUT yapacak
+    if (serverRecord) {
+      setSelectedSheet(serverRecord)
+    } else {
+      setSelectedSheet(savedSheet)
+    }
 
     // Sadece İLK kayıtta (yeni föy oluşturulduğunda) Çekme Tablosuna aktar
     if (isNew) {
@@ -77,29 +86,32 @@ export default function KumasTakipFoyuPage() {
       boyCekmeYuzde: savedSheet.cekmeBoy || "",
     }
 
-    let generatedFabrics = []
-    const t = Date.now()
-
-    if (savedSheet.kullanildigiYer === "ASTAR") {
-      generatedFabrics = [
-        { ...emptyFabric, id: t.toString() }, // ANA KUMAŞ empty
-        { ...emptyFabric, ...baseFabricData, id: (t + 1).toString(), kullanildigiYer: "ASTAR" }
-      ]
-    } else if (savedSheet.kullanildigiYer === "GARNİ") {
-      generatedFabrics = [
-        { ...emptyFabric, id: t.toString() }, // ANA KUMAŞ empty
-        { ...emptyFabric, id: (t + 1).toString() }, // ASTAR empty
-        { ...emptyFabric, ...baseFabricData, id: (t + 2).toString(), kullanildigiYer: "GARNİ" }
-      ]
-    } else {
-      // Default to ANA KUMAŞ if "ANA KUMAŞ" or empty
-      generatedFabrics = [
-        { ...emptyFabric, ...baseFabricData, id: t.toString(), kullanildigiYer: savedSheet.kullanildigiYer || "ANA KUMAŞ" }
-      ]
+    // Kumaş türüne göre doğru slot indeksi belirle:
+    // ANA KUMAŞ → slot 0, ASTAR → slot 1, GARNİ → slot 2
+    const getSlotIndex = (yer: string) => {
+      if (yer === "ASTAR") return 1
+      if (yer === "GARNİ") return 2
+      return 0 // ANA KUMAŞ veya varsayılan
     }
 
+    const slotIndex = getSlotIndex(savedSheet.kullanildigiYer || "ANA KUMAŞ")
+    
+    // 3 slotluk boş dizi oluştur, sadece doğru slota veriyi yerleştir
+    const t = Date.now()
+    const generatedFabrics = [0, 1, 2].map((i) => {
+      if (i === slotIndex) {
+        return { 
+          ...emptyFabric, 
+          ...baseFabricData, 
+          id: (t + i).toString(), 
+          kullanildigiYer: savedSheet.kullanildigiYer || "ANA KUMAŞ" 
+        }
+      }
+      return { ...emptyFabric, id: (t + i).toString() }
+    })
+
     const cekmeRecord = {
-      id: savedSheet.id,
+      id: serverRecord?.id || savedSheet.id,
       sezon: savedSheet.sezon,
       testeGonderilmeTarihi: savedSheet.geldigiTarih || "",
       modelist: "",
@@ -124,19 +136,17 @@ export default function KumasTakipFoyuPage() {
     )
 
     if (existingCekme) {
-      // Merge logic for existing
-      const maxLen = Math.max(existingCekme.fabrics?.length || 0, generatedFabrics.length)
-      const mergedFabrics = []
-      for (let i = 0; i < maxLen; i++) {
+      // Slot-bazlı merge: her kumaş türü kendi sabit sütununa yerleşir
+      const mergedFabrics = [0, 1, 2].map((i) => {
         const existFab = existingCekme.fabrics?.[i]
         const genFab = generatedFabrics[i]
-        if (!existFab) {
-          mergedFabrics.push(genFab)
-        } else if (!genFab || !genFab.kullanildigiYer) {
-          mergedFabrics.push(existFab)
-        } else {
-          mergedFabrics.push({
-            ...existFab,
+        
+        // Bu slot, yeni eklenen kumaşın slotu mu?
+        if (i === slotIndex) {
+          // Evet — yeni veriyle güncelle (mevcut veriyi koru, üstüne yaz)
+          return {
+            ...(existFab || emptyFabric),
+            id: genFab.id,
             kullanildigiYer: genFab.kullanildigiYer,
             kumasIcerik: genFab.kumasIcerik,
             tedarikci: genFab.tedarikci,
@@ -145,9 +155,12 @@ export default function KumasTakipFoyuPage() {
             kumasEn: genFab.kumasEn,
             enCekmeYuzde: genFab.enCekmeYuzde,
             boyCekmeYuzde: genFab.boyCekmeYuzde,
-          })
+          }
         }
-      }
+        
+        // Bu slot başka bir kumaş türüne ait — mevcut veriyi koru
+        return existFab || genFab
+      })
 
       updateFoy(existingCekme.id, {
         ...existingCekme,
@@ -159,7 +172,7 @@ export default function KumasTakipFoyuPage() {
         fabrics: mergedFabrics
       })
     } else {
-      // İlk defa oluşturuluyorsa doğrudan ekle (id olarak Date.now() vb verebiliriz)
+      // İlk defa oluşturuluyorsa doğrudan ekle
       cekmeRecord.id = Date.now().toString() + Math.random().toString(36).substr(2, 5)
       addFoy(cekmeRecord)
     }

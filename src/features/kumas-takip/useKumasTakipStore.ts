@@ -22,7 +22,7 @@ export function useKumasTakipStore() {
     fetchSheets()
   }, [])
 
-  const saveSheet = async (sheet: KumasTakipSheet) => {
+  const saveSheet = async (sheet: KumasTakipSheet): Promise<KumasTakipSheet | null> => {
     try {
       const exists = sheets.some((s) => s.id === sheet.id)
       
@@ -40,9 +40,12 @@ export function useKumasTakipStore() {
       
       // Kayıttan sonra sunucudan taze ve ilişkili tüm veriyi tekrar çek
       await fetchSheets()
+      
+      return savedSheet
     } catch (error) {
       console.error("Save error:", error)
       alert("Kaydedilirken bir hata oluştu.")
+      return null
     }
   }
 
