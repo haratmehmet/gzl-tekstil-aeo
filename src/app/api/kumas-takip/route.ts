@@ -238,11 +238,6 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 })
     }
 
-    // Deleting linked KalanKumas entries
-    await prisma.kalanKumas.deleteMany({
-      where: { takipFoyuId: id },
-    })
-
     await prisma.kumasTakip.delete({
       where: { id },
     })
