@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Save, RotateCcw, FileSpreadsheet, FileText } from "lucide-react"
 import { syncKumasToKalanKumas } from "@/features/kalan-kumas/kalan-kumas-store"
+import { useKumasTakipStore } from "../useKumasTakipStore"
+
 // Types definitions for the roll item and the tracking sheet
 export interface RollItem {
   id: number
@@ -43,6 +45,7 @@ interface KumasTakipFormProps {
 }
 
 export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormProps) {
+  const { sheets } = useKumasTakipStore()
   // Form states initialized with initialData or defaults
   const [id, setId] = React.useState("")
   const [kumasKodu, setKumasKodu] = React.useState("")
@@ -181,6 +184,22 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
   const handleFormSave = (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     if (!kumasKodu) return
+
+    if (kullanildigiYer === "ANA KUMAŞ") {
+      const currentId = id || ""
+      const isDuplicate = sheets.some(s => 
+        s.baglandigiModel === baglandigiModel && 
+        s.kullanildigiYer === "ANA KUMAŞ" &&
+        s.id !== currentId
+      )
+      
+      if (isDuplicate) {
+        const confirmSave = window.confirm(
+          "Dikkat! Aynı bağlandığı model ile ANA KUMAŞ giriyorsunuz. Bu durum eski ana kumaş bilgisine ait verilerin karışmasına veya hatalı işlem görmesine sebep olabilir. Yine de kaydetmek istiyor musunuz?"
+        )
+        if (!confirmSave) return
+      }
+    }
 
     const isNew = !id;
     const generatedId = id || Date.now().toString()

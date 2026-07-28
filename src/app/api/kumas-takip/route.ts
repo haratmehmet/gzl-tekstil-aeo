@@ -238,26 +238,10 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 })
     }
 
-    // Fetch the tracking record first to get its matching fields for CekmeFoyu
-    const record = await prisma.kumasTakip.findUnique({
-      where: { id }
-    })
-
     // Deleting linked KalanKumas entries
     await prisma.kalanKumas.deleteMany({
       where: { takipFoyuId: id },
     })
-
-    if (record) {
-      // Deleting linked CekmeFoyu entries by matching fabric code, model code, and season
-      await prisma.cekmeFoyu.deleteMany({
-        where: {
-          kumasKodu: record.kumasKodu,
-          modelKodu: record.baglandigiModel,
-          sezon: record.sezon,
-        },
-      })
-    }
 
     await prisma.kumasTakip.delete({
       where: { id },
