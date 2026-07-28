@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
+import { requireMutationAuth } from "@/lib/session";
 import prisma from "@/lib/prisma";
 
 export async function GET(request: Request) {
   try {
-    const url = new URL(request.url);
-    const token = url.searchParams.get("token");
-    
-    // Geçici güvenlik: sadece doğru token ile çalışır
-    if (token !== "gzl2026temizle") {
-      return NextResponse.json({ success: false, error: "Geçersiz token." }, { status: 403 });
+    const user = await requireMutationAuth();
+    if (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
+      return new NextResponse("Unauthorized. Sadece Admin bu işlemi yapabilir.", { status: 403 });
     }
 
     // Tabloları temizle
@@ -19,7 +17,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ 
       success: true, 
-      message: "TEMİZLİK BAŞARILI! Veritabanındaki tüm deneme verileri silindi." 
+      message: "TEMİZLİK BAŞARILI! Veritabanındaki tüm deneme verileri silindi. Bu sekmeyi kapatabilirsiniz." 
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
