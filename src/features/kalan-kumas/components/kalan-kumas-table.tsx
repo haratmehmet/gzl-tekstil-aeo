@@ -65,6 +65,60 @@ function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRow
   )
 }
 
+function MetrajInput({ record, updateRecord, className }: { record: any, updateRecord: any, className?: string }) {
+  const [localVal, setLocalVal] = React.useState<string | null>(null)
+  
+  const displayVal = record.kumasMetraji || ""
+  
+  return (
+    <input
+      type="text"
+      value={localVal !== null ? localVal : displayVal}
+      onChange={(e) => setLocalVal(e.target.value)}
+      onFocus={() => {
+        const val = record.kumasMetraji || ""
+        setLocalVal(val.replace(/\s*(Mt|Kg|mt|kg)$/i, ''))
+      }}
+      onBlur={() => {
+        if (localVal === null) return
+        const val = localVal.trim()
+        if (!val) {
+          updateRecord(record.id, { kumasMetraji: "" })
+          setLocalVal(null)
+          return
+        }
+
+        let unit = "Mt"
+        if (val.toLowerCase().includes("kg")) unit = "Kg"
+        else if (val.toLowerCase().includes("mt")) unit = "Mt"
+        else {
+          const isKgRecord = (record.kumasMetraji || "").toLowerCase().includes("kg")
+          unit = isKgRecord ? "Kg" : "Mt"
+        }
+
+        const cleaned = val.replace(',', '.').replace(/[^\d.]/g, '')
+        const num = parseFloat(cleaned)
+        
+        if (!isNaN(num)) {
+          const formatted = num.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+          updateRecord(record.id, { kumasMetraji: `${formatted} ${unit}` })
+        } else {
+          updateRecord(record.id, { kumasMetraji: `${val} ${unit}` })
+        }
+        
+        setLocalVal(null)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.currentTarget.blur()
+        }
+      }}
+      className={className || "w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-sky-800 print:text-[10px]"}
+      placeholder="örn. 300"
+    />
+  )
+}
+
 export function KalanKumasTable() {
   const { records, updateRecord, deleteRecord, addEmptyRecord, syncPastSheets } = useKalanKumas()
   const [sortConfig, setSortConfig] = React.useState<{ key: "faturaTarih" | "depoyaGirisTarihi", direction: "asc" | "desc" } | null>(null)
@@ -351,31 +405,9 @@ export function KalanKumasTable() {
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200 bg-sky-50/30">
-                    <input
-                      value={r.kumasMetraji}
-                      onChange={(e) => updateRecord(r.id, { kumasMetraji: e.target.value })}
-                      onBlur={(e) => {
-                        const val = e.target.value.trim()
-                        if (!val) return;
-
-                        let unit = "Mt";
-                        if (val.toLowerCase().includes("kg")) unit = "Kg";
-                        else if (val.toLowerCase().includes("mt")) unit = "Mt";
-                        
-                        const isKgRecord = (r.kumasMetraji || "").toLowerCase().includes("kg")
-                        if (!val.toLowerCase().includes("mt") && !val.toLowerCase().includes("kg")) {
-                          unit = isKgRecord ? "Kg" : "Mt";
-                        }
-
-                        const num = parseNumber(val);
-
-                        if (num > 0 || num === 0) {
-                          const formatted = num.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                          updateRecord(r.id, { kumasMetraji: `${formatted} ${unit}` })
-                        } else if (!val.toLowerCase().includes("mt") && !val.toLowerCase().includes("kg")) {
-                          updateRecord(r.id, { kumasMetraji: `${val} ${unit}` })
-                        }
-                      }}
+                    <MetrajInput 
+                      record={r} 
+                      updateRecord={updateRecord} 
                       className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-sky-800 print:text-[10px]"
                     />
                   </td>
@@ -524,33 +556,10 @@ export function KalanKumasTable() {
 
                   <div className="space-y-1">
                     <Label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Kumaş Mt/Kg</Label>
-                    <input
-                      value={r.kumasMetraji}
-                      onChange={(e) => updateRecord(r.id, { kumasMetraji: e.target.value })}
-                      onBlur={(e) => {
-                        const val = e.target.value.trim()
-                        if (!val) return;
-
-                        let unit = "Mt";
-                        if (val.toLowerCase().includes("kg")) unit = "Kg";
-                        else if (val.toLowerCase().includes("mt")) unit = "Mt";
-                        
-                        const isKgRecord = (r.kumasMetraji || "").toLowerCase().includes("kg")
-                        if (!val.toLowerCase().includes("mt") && !val.toLowerCase().includes("kg")) {
-                          unit = isKgRecord ? "Kg" : "Mt";
-                        }
-
-                        const num = parseNumber(val);
-
-                        if (num > 0 || num === 0) {
-                          const formatted = num.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                          updateRecord(r.id, { kumasMetraji: `${formatted} ${unit}` })
-                        } else if (!val.toLowerCase().includes("mt") && !val.toLowerCase().includes("kg")) {
-                          updateRecord(r.id, { kumasMetraji: `${val} ${unit}` })
-                        }
-                      }}
+                    <MetrajInput 
+                      record={r} 
+                      updateRecord={updateRecord} 
                       className="w-full h-9 px-2 rounded-md border border-neutral-200 focus:outline-none text-sm font-bold text-neutral-700"
-                      placeholder="örn. 300 Mt"
                     />
                   </div>
                 </div>
