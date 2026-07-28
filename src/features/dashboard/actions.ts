@@ -34,7 +34,11 @@ export async function getDashboardStats() {
     }
 
     // 3. Aktif Sezonlar
-    const activeSeasonsCount = await prisma.uretimSezon.count()
+    const kumasTakipSezonlar = await prisma.kumasTakip.findMany({
+      select: { sezon: true },
+      distinct: ['sezon']
+    })
+    const activeSeasonsCount = kumasTakipSezonlar.length
 
     // 4. Son İşlemler (Son 5 Takip Föyü kaydı)
     const recentTxData = await prisma.kumasTakip.findMany({
