@@ -209,7 +209,7 @@ export function KumasTakipList({ sheets, onSelect, onDelete, activeId }: KumasTa
               <div className="space-y-1.5 flex-1 min-w-0">
                 <h4 className="text-sm font-bold text-neutral-800">Föyü Silmek İstiyor musunuz?</h4>
                 <p className="text-xs text-neutral-500 leading-relaxed text-left">
-                  Bu kumaş takip föyü silinecektir. Bu işlemle birlikte **kalan kumaş stoğu** ve **çekme tablosundaki** ilişkili tüm kayıtlar da kalıcı olarak silinir.
+                  Bu kumaş takip föyü silinecektir. Bu işlemle birlikte bu föye ait <strong>Kalan Kumaş</strong> stoğu da kalıcı olarak silinir. Çekme Tablosundaki verileriniz ise güvendedir, silinmeyecektir.
                 </p>
               </div>
             </div>

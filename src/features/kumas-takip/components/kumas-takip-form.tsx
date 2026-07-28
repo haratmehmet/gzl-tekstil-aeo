@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Save, RotateCcw, FileSpreadsheet, FileText } from "lucide-react"
+import { Save, RotateCcw, FileSpreadsheet, FileText, AlertTriangle } from "lucide-react"
 import { syncKumasToKalanKumas } from "@/features/kalan-kumas/kalan-kumas-store"
 import { useKumasTakipStore } from "../useKumasTakipStore"
 
@@ -61,6 +61,7 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
   const [rolls, setRolls] = React.useState<RollItem[]>([])
   const [isPdfLoading, setIsPdfLoading] = React.useState(false)
   const [kumasIcerik, setKumasIcerik] = React.useState("")
+  const [showDuplicateWarning, setShowDuplicateWarning] = React.useState(false)
   const [kumasRenk, setKumasRenk] = React.useState("")
   const [kumasEn, setKumasEn] = React.useState("")
   const [cekmeEn, setCekmeEn] = React.useState("")
@@ -181,11 +182,11 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
     return rolls.reduce((sum, roll) => sum + (roll.eksikFazlaMetraj || 0), 0)
   }, [rolls])
 
-  const handleFormSave = (e?: React.FormEvent) => {
+  const handleFormSave = (e?: React.FormEvent, bypassDuplicateCheck = false) => {
     if (e) e.preventDefault()
     if (!kumasKodu) return
 
-    if (kullanildigiYer === "ANA KUMAŞ") {
+    if (kullanildigiYer === "ANA KUMAŞ" && !bypassDuplicateCheck) {
       const currentId = id || ""
       const isDuplicate = sheets.some(s => 
         s.baglandigiModel === baglandigiModel && 
@@ -194,10 +195,8 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
       )
       
       if (isDuplicate) {
-        const confirmSave = window.confirm(
-          "Dikkat! Aynı bağlandığı model ile ANA KUMAŞ giriyorsunuz. Bu durum eski ana kumaş bilgisine ait verilerin karışmasına veya hatalı işlem görmesine sebep olabilir. Yine de kaydetmek istiyor musunuz?"
-        )
-        if (!confirmSave) return
+        setShowDuplicateWarning(true)
+        return
       }
     }
 
@@ -1303,7 +1302,47 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
             </div>
           </form>
         </CardContent>
-      </Card>
+
+      {/* Duplicate Warning Modal */}
+      {showDuplicateWarning && (
+        <div className="fixed inset-0 bg-neutral-900/40 backdrop-blur-[2px] flex items-center justify-center z-[100] animate-in fade-in duration-200">
+          <div className="bg-white border border-neutral-200 rounded-2xl p-5 max-w-sm w-full mx-4 shadow-xl animate-in zoom-in-95 duration-200">
+            <div className="flex gap-3">
+              <div className="h-10 w-10 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
+              </div>
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <h4 className="text-sm font-bold text-neutral-800">Mükerrer Ana Kumaş</h4>
+                <p className="text-xs text-neutral-500 leading-relaxed text-left whitespace-normal break-words">
+                  Dikkat! Aynı bağlandığı model ile <strong>ANA KUMAŞ</strong> giriyorsunuz. Bu durum eski ana kumaş bilgisine ait verilerin karışmasına veya hatalı işlem görmesine sebep olabilir. Yine de kaydetmek istiyor musunuz?
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end mt-5">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setShowDuplicateWarning(false)}
+                className="h-8 text-xs font-semibold rounded-xl border-neutral-200 hover:bg-neutral-50"
+              >
+                Vazgeç
+              </Button>
+              <Button
+                variant="default"
+                type="button"
+                onClick={() => {
+                  setShowDuplicateWarning(false)
+                  handleFormSave(undefined, true)
+                }}
+                className="h-8 text-xs font-semibold rounded-xl bg-amber-500 hover:bg-amber-600 text-white"
+              >
+                Yine De Kaydet
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </Card>
 
       {/* Loading Overlay */}
       {isPdfLoading && (
