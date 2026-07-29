@@ -1128,8 +1128,13 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
                                 decimalSeparator=","
                                 decimalScale={2}
                                 allowNegative={false}
-                                value={roll.topUstundeYazanMt === 0 ? "" : roll.topUstundeYazanMt}
-                                onValueChange={(values) => handleRollChange(index, "topUstundeYazanMt", values.floatValue)}
+                                defaultValue={roll.topUstundeYazanMt === 0 ? "" : roll.topUstundeYazanMt}
+                                key={`yazan-${roll.id}`}
+                                onValueChange={(values, sourceInfo) => {
+                                  if (sourceInfo.source === 'event') {
+                                    handleRollChange(index, "topUstundeYazanMt", values.floatValue)
+                                  }
+                                }}
                                 className="h-8 text-[11px] text-center border-neutral-200 max-w-[150px] mx-auto font-medium"
                                 placeholder="0,00"
                               />
@@ -1143,8 +1148,13 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
                                 decimalSeparator=","
                                 decimalScale={2}
                                 allowNegative={false}
-                                value={roll.cikanMt ?? ""}
-                                onValueChange={(values) => handleRollChange(index, "cikanMt", values.floatValue)}
+                                defaultValue={roll.cikanMt ?? ""}
+                                key={`cikan-${roll.id}`}
+                                onValueChange={(values, sourceInfo) => {
+                                  if (sourceInfo.source === 'event') {
+                                    handleRollChange(index, "cikanMt", values.floatValue)
+                                  }
+                                }}
                                 className="h-8 text-[11px] text-center border-neutral-200 max-w-[150px] mx-auto font-medium"
                                 placeholder="0,00"
                               />

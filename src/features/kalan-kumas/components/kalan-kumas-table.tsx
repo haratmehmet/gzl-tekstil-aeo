@@ -48,8 +48,8 @@ const formatWhileTyping = (val: string) => {
 function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRowTotal: any, updateRecord: any }) {
   const computedTotal = getRowTotal(record.kumasMetraji, record.birimFiyat)
   
-  // Sadece ekranda görünmesi için lokal state (kullanıcı yazarken)
-  const [localVal, setLocalVal] = React.useState<number | undefined>(undefined)
+  // Sadece son girilen değeri takip edeceğiz, input uncontrolled olacak
+  const [lastVal, setLastVal] = React.useState<number | undefined>(undefined)
 
   return (
     <NumericFormat
@@ -57,21 +57,26 @@ function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRow
       decimalSeparator=","
       decimalScale={2}
       allowNegative={false}
-      // Kullanıcı aktif olarak yazmıyorsa hesaplanan değeri göster
-      value={localVal !== undefined ? localVal : (computedTotal || "")}
-      onValueChange={(values) => {
-        setLocalVal(values.floatValue)
+      // uncontrolled input: react-number-format DOM ve Undo stack'i kendisi yönetir
+      defaultValue={computedTotal || ""}
+      key={`total-${record.id}-${computedTotal}`} // Eğer dışarıdan computedTotal değişirse input yenilensin
+      onValueChange={(values, sourceInfo) => {
+        if (sourceInfo.source === 'event') {
+          setLastVal(values.floatValue)
+        }
       }}
       onBlur={() => {
-        // Eğer kullanıcı alanı tamamen sildiyse veya 0 bıraktıysa sıfırla
-        if (localVal === undefined || localVal === 0) {
+        // Eğer kullanıcı hiç değişiklik yapmadan çıktıysa veya tamamen sildiyse dokunma/sıfırla
+        if (lastVal === undefined) return
+        
+        if (lastVal === 0) {
           const isKg = record.kumasMetraji.toLowerCase().includes("kg")
           updateRecord(record.id, { kumasMetraji: `0 ${isKg ? "Kg" : "Mt"}` })
-          setLocalVal(undefined)
+          setLastVal(undefined)
           return
         }
 
-        const newTotal = localVal
+        const newTotal = lastVal
         
         const f = typeof record.birimFiyat === "number" ? record.birimFiyat : 0
         const mStr = typeof record.kumasMetraji === 'string' ? record.kumasMetraji.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '') : '0'
@@ -93,8 +98,7 @@ function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRow
           }
         }
         
-        // İşlem bitince lokal state'i temizle, computed değer ekranda görünsün
-        setLocalVal(undefined)
+        setLastVal(undefined)
       }}
       onKeyDown={(e) => {
         if (e.key === "Enter") {
