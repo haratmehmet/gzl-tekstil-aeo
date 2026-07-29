@@ -72,9 +72,7 @@ export default function KumasTakipFoyuPage() {
       setSelectedSheet(savedSheet)
     }
 
-    // Sadece İLK kayıtta (yeni föy oluşturulduğunda) Çekme Tablosuna aktar
-    if (isNew) {
-      const emptyFabric = { id: "", kullanildigiYer: "", kumasIcerik: "", tedarikci: "", artikelAdi: "", urunDptRenk: "", gelenMetraj: "", kumasEn: "", enCekmeYuzde: "", boyCekmeYuzde: "" }
+    const emptyFabric = { id: "", kullanildigiYer: "", kumasIcerik: "", tedarikci: "", artikelAdi: "", urunDptRenk: "", gelenMetraj: "", kumasEn: "", enCekmeYuzde: "", boyCekmeYuzde: "" }
     
     const baseFabricData = {
       kumasIcerik: savedSheet.kumasIcerik || "",
@@ -176,7 +174,6 @@ export default function KumasTakipFoyuPage() {
       cekmeRecord.id = Date.now().toString() + Math.random().toString(36).substr(2, 5)
       addFoy(cekmeRecord)
     }
-    } // End of if (isNew)
   }
 
   // Start a fresh form
