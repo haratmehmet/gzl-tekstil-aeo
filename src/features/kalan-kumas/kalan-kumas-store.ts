@@ -11,6 +11,7 @@ export interface KalanKumasRecord {
   kumasKodu: string
   kumasMetraji: string
   takipFoyuId?: string
+  renk?: string | null
   notlar?: { aciklama: string; kesilenMt: string; kalanMt: string }
 }
 
