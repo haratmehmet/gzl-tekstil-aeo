@@ -4,6 +4,8 @@ import { createBackupLog, updateBackupLog, logBackupStep } from "@/features/back
 import { requireMutationAuth } from "@/lib/session";
 import prisma from "@/lib/prisma"
 
+export const maxDuration = 60; // Allow maximum serverless execution time (up to 60s for Pro)
+
 export async function POST(request: Request) {
   try {
     const user = await requireMutationAuth();
@@ -66,8 +68,8 @@ export async function POST(request: Request) {
     }
 
     if (action === "BACKUP") {
-      runAsyncBackup();
-      return NextResponse.json({ success: true, message: "Yedekleme arka planda başlatıldı." });
+      await runAsyncBackup();
+      return NextResponse.json({ success: true, message: "Yedekleme başarıyla tamamlandı." });
     }
 
     if (action === "RESTORE") {
@@ -79,8 +81,8 @@ export async function POST(request: Request) {
       const isValid = await bcrypt.compare(password, user.password);
       if (!isValid) throw new Error("Hatalı yönetici şifresi");
       
-      runAsyncRestore(fileId);
-      return NextResponse.json({ success: true, message: "Geri yükleme işlemi başlatıldı. Veritabanınız birazdan güncellenecek." });
+      await runAsyncRestore(fileId);
+      return NextResponse.json({ success: true, message: "Geri yükleme işlemi başarıyla tamamlandı. Sayfayı yenileyebilirsiniz." });
     }
 
     return NextResponse.json({ success: false, message: "Geçersiz işlem" }, { status: 400 });

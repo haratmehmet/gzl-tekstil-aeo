@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { BackupService } from "@/features/backup/services/backup-service";
 import { createBackupLog, updateBackupLog, logBackupStep } from "@/features/backup/actions";
 
+export const maxDuration = 60; // Allow maximum serverless execution time (up to 60s for Pro)
+
 export async function GET(request: Request) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -9,8 +11,8 @@ export async function GET(request: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    runAsyncBackup();
-    return NextResponse.json({ success: true, message: "Backup işlemi başlatıldı" });
+    await runAsyncBackup();
+    return NextResponse.json({ success: true, message: "Backup işlemi başarıyla tamamlandı" });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
