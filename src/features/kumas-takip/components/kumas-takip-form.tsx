@@ -145,8 +145,19 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
     })
   }
 
+  const [rollsHistory, setRollsHistory] = React.useState<RollItem[][]>([])
+
   // Handle Roll row input changes
   const handleRollChange = (index: number, field: keyof RollItem, floatValue: number | undefined) => {
+    setRollsHistory(prev => {
+      // Sadece gerçekten değiştiğinde geçmişe ekle
+      const last = prev[prev.length - 1];
+      if (JSON.stringify(last) !== JSON.stringify(rolls)) {
+        return [...prev.slice(-50), rolls]
+      }
+      return prev;
+    });
+
     setRolls((prevRolls) => {
       const updated = [...prevRolls]
       const roll = { ...updated[index] }
@@ -167,6 +178,19 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
       updated[index] = roll
       return updated
     })
+  }
+
+  const handleUndoRolls = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      setRollsHistory(prev => {
+        if (prev.length === 0) return prev;
+        const newHistory = [...prev];
+        const lastState = newHistory.pop();
+        if (lastState) setRolls(lastState);
+        return newHistory;
+      });
+    }
   }
 
   // Calculate sum of "TOP ÜSTÜNDE YAZAN MT" to update "GELEN METRAJ" dynamically
@@ -1130,6 +1154,7 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
                                 allowNegative={false}
                                 value={roll.topUstundeYazanMt === 0 ? "" : roll.topUstundeYazanMt}
                                 onValueChange={(values) => handleRollChange(index, "topUstundeYazanMt", values.floatValue)}
+                                onKeyDown={handleUndoRolls}
                                 className="h-8 text-[11px] text-center border-neutral-200 max-w-[150px] mx-auto font-medium"
                                 placeholder="0,00"
                               />
@@ -1145,6 +1170,7 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
                                 allowNegative={false}
                                 value={roll.cikanMt ?? ""}
                                 onValueChange={(values) => handleRollChange(index, "cikanMt", values.floatValue)}
+                                onKeyDown={handleUndoRolls}
                                 className="h-8 text-[11px] text-center border-neutral-200 max-w-[150px] mx-auto font-medium"
                                 placeholder="0,00"
                               />
