@@ -55,6 +55,19 @@ export async function POST(request: Request) {
     }
 
     if (action === "GET_LOGS") {
+      // Clean up stuck IN_PROGRESS logs (older than 5 minutes)
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      await prisma.backupLog.updateMany({
+        where: { 
+          status: "IN_PROGRESS",
+          startedAt: { lt: fiveMinutesAgo }
+        },
+        data: { 
+          status: "FAILED", 
+          errorMessage: "İşlem sunucu tarafından yarıda kesildi (Zaman aşımı)" 
+        }
+      });
+
       const logs = await prisma.backupLog.findMany({
         orderBy: { startedAt: "desc" },
         take: 30,
