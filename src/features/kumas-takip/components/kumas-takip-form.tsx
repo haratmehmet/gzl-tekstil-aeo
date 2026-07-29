@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Save, RotateCcw, FileSpreadsheet, FileText, AlertTriangle } from "lucide-react"
 import { syncKumasToKalanKumas } from "@/features/kalan-kumas/kalan-kumas-store"
 import { useKumasTakipStore } from "../useKumasTakipStore"
+import { NumericFormat } from "react-number-format"
 
 // Types definitions for the roll item and the tracking sheet
 export interface RollItem {
@@ -145,20 +146,15 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
   }
 
   // Handle Roll row input changes
-  const [rollsHistory, setRollsHistory] = React.useState<RollItem[][]>([])
-
-  const handleRollChange = (index: number, field: keyof RollItem, value: string) => {
-    // Her değişiklikte mevcut rolls state'ini geçmişe ekle (Undo için max 50 adım)
-    setRollsHistory(prev => [...prev.slice(-50), rolls])
-
+  const handleRollChange = (index: number, field: keyof RollItem, floatValue: number | undefined) => {
     setRolls((prevRolls) => {
       const updated = [...prevRolls]
       const roll = { ...updated[index] }
 
       if (field === "topUstundeYazanMt") {
-        roll.topUstundeYazanMt = Math.max(0, parseFloat(value) || 0)
+        roll.topUstundeYazanMt = floatValue ?? 0
       } else if (field === "cikanMt") {
-        roll.cikanMt = value === "" ? "" : Math.max(0, parseFloat(value) || 0)
+        roll.cikanMt = floatValue === undefined ? "" : floatValue
       }
 
       // Calculate Deficit/Excess: Only if cikanMt is explicitly entered
@@ -171,19 +167,6 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
       updated[index] = roll
       return updated
     })
-  }
-
-  const handleUndoRolls = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-      e.preventDefault();
-      setRollsHistory(prev => {
-        if (prev.length === 0) return prev;
-        const newHistory = [...prev];
-        const lastState = newHistory.pop();
-        if (lastState) setRolls(lastState);
-        return newHistory;
-      });
-    }
   }
 
   // Calculate sum of "TOP ÜSTÜNDE YAZAN MT" to update "GELEN METRAJ" dynamically
@@ -1139,13 +1122,14 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
 
                             {/* Column 2: Written Meters Input */}
                             <td className="px-4 py-2 border-r border-neutral-200">
-                              <Input
-                                type="number"
-                                step="any"
-                                min="0"
+                              <NumericFormat
+                                customInput={Input}
+                                thousandSeparator="."
+                                decimalSeparator=","
+                                decimalScale={2}
+                                allowNegative={false}
                                 value={roll.topUstundeYazanMt === 0 ? "" : roll.topUstundeYazanMt}
-                                onChange={(e) => handleRollChange(index, "topUstundeYazanMt", e.target.value)}
-                                onKeyDown={handleUndoRolls}
+                                onValueChange={(values) => handleRollChange(index, "topUstundeYazanMt", values.floatValue)}
                                 className="h-8 text-[11px] text-center border-neutral-200 max-w-[150px] mx-auto font-medium"
                                 placeholder="0,00"
                               />
@@ -1153,13 +1137,14 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
 
                             {/* Column 3: Measured Meters Input */}
                             <td className="px-4 py-2 border-r border-neutral-200">
-                              <Input
-                                type="number"
-                                step="any"
-                                min="0"
+                              <NumericFormat
+                                customInput={Input}
+                                thousandSeparator="."
+                                decimalSeparator=","
+                                decimalScale={2}
+                                allowNegative={false}
                                 value={roll.cikanMt ?? ""}
-                                onChange={(e) => handleRollChange(index, "cikanMt", e.target.value)}
-                                onKeyDown={handleUndoRolls}
+                                onValueChange={(values) => handleRollChange(index, "cikanMt", values.floatValue)}
                                 className="h-8 text-[11px] text-center border-neutral-200 max-w-[150px] mx-auto font-medium"
                                 placeholder="0,00"
                               />
