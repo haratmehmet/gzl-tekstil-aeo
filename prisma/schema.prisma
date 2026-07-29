@@ -52,6 +52,7 @@ model CekmeFoyu {
   sapKodu               String
   kumasKodu             String
   sezon                 String
+  renk                  String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
@@ -84,6 +85,7 @@ model KalanKumas {
   kumasKodu         String
   kumasMetraji      String
   birimFiyat        Float?
+  renk              String?
   eklenmeTarihi     DateTime @default(now())
   updatedAt         DateTime @updatedAt
   takipFoyuId       String?

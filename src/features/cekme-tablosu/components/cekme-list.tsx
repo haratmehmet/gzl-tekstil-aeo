@@ -2,15 +2,16 @@
 
 import * as React from "react"
 import { CekmeFoyu } from "../types"
-import { Trash2, AlertTriangle } from "lucide-react"
+import { Trash2, AlertTriangle, Paintbrush } from "lucide-react"
 
 interface CekmeListProps {
   foyler: CekmeFoyu[]
   onEdit: (foy: CekmeFoyu) => void
   onDelete: (id: string) => void
+  onColorChange?: (id: string, color: string | null) => void
 }
 
-export function CekmeList({ foyler, onEdit, onDelete }: CekmeListProps) {
+export function CekmeList({ foyler, onEdit, onDelete, onColorChange }: CekmeListProps) {
   const [deleteConfirmId, setDeleteConfirmId] = React.useState<string | null>(null)
   if (foyler.length === 0) {
     return (
@@ -22,7 +23,7 @@ export function CekmeList({ foyler, onEdit, onDelete }: CekmeListProps) {
 
   // Common th style
   const thStyle = "px-2 py-3 border border-neutral-300 text-[10px] font-bold text-center uppercase whitespace-nowrap"
-  const tdStyle = "px-2 py-2 border border-neutral-300 text-[11px] text-center whitespace-nowrap bg-white cursor-pointer hover:bg-neutral-50"
+  const getTdStyle = (isRed: boolean) => `px-2 py-2 border border-neutral-300 text-[11px] text-center whitespace-nowrap cursor-pointer transition-colors ${isRed ? 'bg-red-100 hover:bg-red-200 text-red-900 font-medium' : 'bg-white hover:bg-neutral-50'}`
 
   // Background colors corresponding to the Excel visual
   const bgGray = "bg-[#d9d9d9]"
@@ -62,56 +63,72 @@ export function CekmeList({ foyler, onEdit, onDelete }: CekmeListProps) {
             </tr>
           </thead>
           <tbody>
-            {foyler.map((foy) => (
-              <tr key={foy.id} onClick={() => onEdit(foy)} className="group transition-colors">
-                <td className={tdStyle}>{foy.testeGonderilmeTarihi ? new Date(foy.testeGonderilmeTarihi).toLocaleDateString("tr-TR") : "-"}</td>
-                <td className={tdStyle}>{foy.modelist}</td>
-                <td className={tdStyle}>{foy.etiket}</td>
-                <td className={tdStyle}>{foy.modelKodu}</td>
-                <td className={tdStyle}>{foy.sapKodu}</td>
-                <td className={tdStyle}>{foy.kumasKodu}</td>
-                
-                {[0, 1, 2].map((i) => {
-                  const fab = foy.fabrics[i]
-                  if (fab) {
-                    return (
-                      <React.Fragment key={`td-fab-${foy.id}-${i}`}>
-                        <td className={tdStyle}>{fab.kullanildigiYer}</td>
-                        <td className={tdStyle}>{fab.kumasIcerik}</td>
-                        <td className={tdStyle}>{fab.tedarikci}</td>
-                        <td className={tdStyle}>{fab.artikelAdi}</td>
-                        <td className={tdStyle}>{fab.urunDptRenk}</td>
-                        <td className={tdStyle}>{fab.gelenMetraj}</td>
-                        <td className={tdStyle}>{fab.kumasEn}</td>
-                        <td className={tdStyle}>{fab.enCekmeYuzde}</td>
-                        <td className={tdStyle}>{fab.boyCekmeYuzde}</td>
-                      </React.Fragment>
-                    )
-                  } else {
-                    return (
-                      <React.Fragment key={`td-fab-${foy.id}-empty-${i}`}>
-                        <td className={tdStyle}></td><td className={tdStyle}></td>
-                        <td className={tdStyle}></td><td className={tdStyle}></td>
-                        <td className={tdStyle}></td><td className={tdStyle}></td>
-                        <td className={tdStyle}></td><td className={tdStyle}></td>
-                        <td className={tdStyle}></td>
-                      </React.Fragment>
-                    )
-                  }
-                })}
-                <td className={`${tdStyle} px-0`}>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setDeleteConfirmId(foy.id)
-                    }} 
-                    className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors inline-block"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {foyler.map((foy) => {
+              const isRed = foy.renk === 'red';
+              const tdStyle = getTdStyle(isRed);
+              return (
+                <tr key={foy.id} onClick={() => onEdit(foy)} className={`group transition-colors ${isRed ? 'bg-red-50 hover:bg-red-100' : ''}`}>
+                  <td className={tdStyle}>{foy.testeGonderilmeTarihi ? new Date(foy.testeGonderilmeTarihi).toLocaleDateString("tr-TR") : "-"}</td>
+                  <td className={tdStyle}>{foy.modelist}</td>
+                  <td className={tdStyle}>{foy.etiket}</td>
+                  <td className={tdStyle}>{foy.modelKodu}</td>
+                  <td className={tdStyle}>{foy.sapKodu}</td>
+                  <td className={tdStyle}>{foy.kumasKodu}</td>
+                  
+                  {[0, 1, 2].map((i) => {
+                    const fab = foy.fabrics[i]
+                    if (fab) {
+                      return (
+                        <React.Fragment key={`td-fab-${foy.id}-${i}`}>
+                          <td className={tdStyle}>{fab.kullanildigiYer}</td>
+                          <td className={tdStyle}>{fab.kumasIcerik}</td>
+                          <td className={tdStyle}>{fab.tedarikci}</td>
+                          <td className={tdStyle}>{fab.artikelAdi}</td>
+                          <td className={tdStyle}>{fab.urunDptRenk}</td>
+                          <td className={tdStyle}>{fab.gelenMetraj}</td>
+                          <td className={tdStyle}>{fab.kumasEn}</td>
+                          <td className={tdStyle}>{fab.enCekmeYuzde}</td>
+                          <td className={tdStyle}>{fab.boyCekmeYuzde}</td>
+                        </React.Fragment>
+                      )
+                    } else {
+                      return (
+                        <React.Fragment key={`td-fab-${foy.id}-empty-${i}`}>
+                          <td className={tdStyle}></td><td className={tdStyle}></td>
+                          <td className={tdStyle}></td><td className={tdStyle}></td>
+                          <td className={tdStyle}></td><td className={tdStyle}></td>
+                          <td className={tdStyle}></td><td className={tdStyle}></td>
+                          <td className={tdStyle}></td>
+                        </React.Fragment>
+                      )
+                    }
+                  })}
+                  <td className={`${tdStyle} px-0 w-[80px]`}>
+                    <div className="flex items-center justify-center gap-1">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onColorChange?.(foy.id, isRed ? null : 'red')
+                        }} 
+                        className={`p-1.5 rounded-md transition-colors ${isRed ? 'text-red-600 bg-red-200 hover:bg-red-300' : 'text-neutral-400 hover:text-red-500 hover:bg-red-50'}`}
+                        title="Kırmızı ile Boya"
+                      >
+                        <Paintbrush className="h-4 w-4" />
+                      </button>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setDeleteConfirmId(foy.id)
+                        }} 
+                        className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
@@ -119,14 +136,16 @@ export function CekmeList({ foyler, onEdit, onDelete }: CekmeListProps) {
       {/* MOBİL GÖRÜNÜM (KARTLAR) */}
       <div className="block lg:hidden bg-neutral-50/50 p-2 sm:p-4">
         <div className="space-y-4">
-          {foyler.map((foy) => (
+          {foyler.map((foy) => {
+            const isRed = foy.renk === 'red';
+            return (
             <div 
               key={foy.id} 
               onClick={() => onEdit(foy)}
-              className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden cursor-pointer hover:border-sky-300 transition-colors"
+              className={`rounded-xl shadow-sm border overflow-hidden cursor-pointer transition-colors ${isRed ? 'bg-red-50 border-red-200 hover:border-red-400' : 'bg-white border-neutral-200 hover:border-sky-300'}`}
             >
               {/* Üst Kısım: Genel Bilgiler */}
-              <div className="p-3 bg-gradient-to-br from-neutral-50 to-neutral-100 border-b border-neutral-100 flex items-center justify-between">
+              <div className={`p-3 border-b flex items-center justify-between ${isRed ? 'bg-gradient-to-br from-red-50 to-red-100 border-red-200' : 'bg-gradient-to-br from-neutral-50 to-neutral-100 border-neutral-100'}`}>
                 <div>
                   <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-0.5">Model Kodu</div>
                   <div className="text-sm font-black text-neutral-800">{foy.modelKodu || "-"}</div>
@@ -155,7 +174,17 @@ export function CekmeList({ foyler, onEdit, onDelete }: CekmeListProps) {
                   <div className="text-[10px] font-bold text-neutral-400 uppercase mb-0.5">Etiket</div>
                   <div className="text-xs font-medium text-neutral-700">{foy.etiket || "-"}</div>
                 </div>
-                <div className="col-span-2 mt-2 pt-2 border-t border-neutral-100 flex justify-end">
+                <div className="col-span-2 mt-2 pt-2 border-t border-neutral-100 flex justify-end gap-2">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onColorChange?.(foy.id, isRed ? null : 'red')
+                    }} 
+                    className={`p-1.5 rounded-md transition-colors flex items-center gap-1.5 ${isRed ? 'text-red-600 bg-red-100 hover:bg-red-200' : 'text-neutral-400 hover:text-red-500 hover:bg-red-50'}`}
+                  >
+                    <Paintbrush className="h-4 w-4" />
+                    <span className="text-xs font-bold">{isRed ? 'TEMİZLE' : 'BOYA'}</span>
+                  </button>
                   <button 
                     onClick={(e) => {
                       e.stopPropagation()
@@ -204,7 +233,8 @@ export function CekmeList({ foyler, onEdit, onDelete }: CekmeListProps) {
                 ))}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       

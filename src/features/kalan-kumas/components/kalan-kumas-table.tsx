@@ -5,7 +5,7 @@ import { useKalanKumas } from "../kalan-kumas-store"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Plus, Trash2, DownloadCloud, FileSpreadsheet, Printer, ArrowUpDown, StickyNote, AlertTriangle } from "lucide-react"
+import { Plus, Trash2, DownloadCloud, FileSpreadsheet, Printer, ArrowUpDown, StickyNote, AlertTriangle, Paintbrush } from "lucide-react"
 import { DebouncedInput } from "@/components/ui/debounced-input"
 import * as ExcelJS from "exceljs"
 
@@ -408,8 +408,8 @@ export function KalanKumasTable() {
             <tbody className="text-[11px] font-semibold text-neutral-800 divide-y divide-neutral-200">
               {sortedRecords.map((r, i) => (
                 <React.Fragment key={r.id}>
-                  <tr className="hover:bg-neutral-50/50 transition-colors">
-                    <td className="p-1 border-r border-neutral-200 text-center print:hidden bg-neutral-50/30">
+                  <tr className={`hover:bg-neutral-50/50 transition-colors ${r.renk === 'red' ? 'bg-red-50 hover:bg-red-100' : r.renk === 'yellow' ? 'bg-yellow-50 hover:bg-yellow-100' : r.renk === 'green' ? 'bg-emerald-50 hover:bg-emerald-100' : ''}`}>
+                    <td className="p-1 border-r border-neutral-200 text-center print:hidden bg-white/40">
                       <button onClick={() => setExpandedNotes(p => ({ ...p, [r.id]: !p[r.id] }))} className={`w-6 h-6 flex items-center justify-center rounded-md transition-colors ${r.notlar?.aciklama || r.notlar?.kesilenMt || r.notlar?.kalanMt ? 'text-emerald-600 bg-emerald-100 hover:bg-emerald-200' : 'text-sky-500 hover:text-sky-600 hover:bg-sky-50'}`} title="Notlar">
                         <StickyNote className="w-3.5 h-3.5" />
                       </button>
@@ -445,14 +445,14 @@ export function KalanKumasTable() {
                     />
                   </td>
 
-                  <td className="p-1 border-r border-neutral-200 bg-sky-50/30">
+                  <td className="p-1 border-r border-neutral-200 bg-sky-50/20">
                     <DebouncedInput
                       value={r.kumasKodu}
                       onChange={(val) => updateRecord(r.id, { kumasKodu: String(val).toUpperCase()  })}
                       className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-black text-sky-900 print:text-[10px]"
                     />
                   </td>
-                  <td className="p-1 border-r border-neutral-200 bg-sky-50/30">
+                  <td className="p-1 border-r border-neutral-200 bg-sky-50/20">
                     <MetrajInput 
                       record={r} 
                       updateRecord={updateRecord} 
@@ -477,10 +477,22 @@ export function KalanKumasTable() {
                       </span>
                     </div>
                   </td>
-                  <td className="p-1 text-center align-middle print:hidden">
-                    <button onClick={() => setDeleteConfirmId(r.id)} className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                  <td className="p-1 text-center align-middle print:hidden w-[100px]">
+                    <div className="flex items-center justify-center gap-0.5">
+                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'yellow' ? null : 'yellow' })} className={`p-1 rounded transition-colors ${r.renk === 'yellow' ? 'bg-yellow-400 text-yellow-900' : 'text-neutral-400 hover:bg-yellow-200 hover:text-yellow-700'}`} title="Sarı">
+                        <Paintbrush className="h-3 w-3" />
+                      </button>
+                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'red' ? null : 'red' })} className={`p-1 rounded transition-colors ${r.renk === 'red' ? 'bg-red-400 text-red-900' : 'text-neutral-400 hover:bg-red-200 hover:text-red-700'}`} title="Kırmızı">
+                        <Paintbrush className="h-3 w-3" />
+                      </button>
+                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'green' ? null : 'green' })} className={`p-1 rounded transition-colors ${r.renk === 'green' ? 'bg-emerald-400 text-emerald-900' : 'text-neutral-400 hover:bg-emerald-200 hover:text-emerald-700'}`} title="Yeşil">
+                        <Paintbrush className="h-3 w-3" />
+                      </button>
+                      <div className="w-px h-4 bg-neutral-300 mx-0.5" />
+                      <button onClick={() => setDeleteConfirmId(r.id)} className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors" title="Sil">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
                   {expandedNotes[r.id] && (
@@ -567,24 +579,42 @@ export function KalanKumasTable() {
              MOBILE LAYOUT - Hides on Desktop (and Print)
            ======================================================= */}
         <div className="block lg:hidden p-4 space-y-4 print:hidden">
-          {sortedRecords.map((r) => (
-            <div key={r.id} className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
+          {sortedRecords.map((r) => {
+            const isRed = r.renk === 'red';
+            const isYellow = r.renk === 'yellow';
+            const isGreen = r.renk === 'green';
+            const bgGradient = isRed ? 'from-red-50 to-red-100 border-red-200' : isYellow ? 'from-yellow-50 to-yellow-100 border-yellow-200' : isGreen ? 'from-emerald-50 to-emerald-100 border-emerald-200' : 'from-sky-50 to-sky-100 border-sky-100';
+            const cardBorder = isRed ? 'border-red-300' : isYellow ? 'border-yellow-300' : isGreen ? 'border-emerald-300' : 'border-neutral-200';
+            
+            return (
+            <div key={r.id} className={`bg-white rounded-xl shadow-sm overflow-hidden border ${cardBorder}`}>
               {/* Header chunk: Kumaş Kodu & Sil Button */}
-              <div className="bg-sky-50/50 p-3 border-b border-neutral-100 flex items-center justify-between">
+              <div className={`p-3 border-b flex items-center justify-between bg-gradient-to-br ${bgGradient}`}>
                 <div>
-                  <Label className="text-[10px] font-bold text-sky-700 uppercase tracking-wider block">Kumaş Kodu</Label>
+                  <Label className={`text-[10px] font-bold uppercase tracking-wider block ${isRed ? 'text-red-700' : isYellow ? 'text-yellow-700' : isGreen ? 'text-emerald-700' : 'text-sky-700'}`}>Kumaş Kodu</Label>
                   <DebouncedInput
                     value={r.kumasKodu}
                     onChange={(val) => updateRecord(r.id, { kumasKodu: String(val).toUpperCase()  })}
-                    className="w-full bg-transparent focus:outline-none font-black text-sky-900 text-lg mt-0.5"
+                    className={`w-full bg-transparent focus:outline-none font-black text-lg mt-0.5 ${isRed ? 'text-red-900' : isYellow ? 'text-yellow-900' : isGreen ? 'text-emerald-900' : 'text-sky-900'}`}
                     placeholder="örn. ME777"
                   />
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => setExpandedNotes(p => ({ ...p, [r.id]: !p[r.id] }))} className={`p-2 rounded-lg transition-colors ${r.notlar?.aciklama || r.notlar?.kesilenMt || r.notlar?.kalanMt ? 'text-emerald-600 bg-emerald-100 hover:bg-emerald-200' : 'text-sky-500 hover:text-sky-600 hover:bg-sky-100'}`}>
+                  <div className="flex bg-white/60 p-0.5 rounded-lg border border-white/50 backdrop-blur-sm mr-1">
+                    <button onClick={() => updateRecord(r.id, { renk: isYellow ? null : 'yellow' })} className={`p-1.5 rounded-md transition-colors ${isYellow ? 'bg-yellow-400 text-yellow-900' : 'text-neutral-500 hover:bg-yellow-200'}`}>
+                      <Paintbrush className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => updateRecord(r.id, { renk: isRed ? null : 'red' })} className={`p-1.5 rounded-md transition-colors ${isRed ? 'bg-red-400 text-red-900' : 'text-neutral-500 hover:bg-red-200'}`}>
+                      <Paintbrush className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => updateRecord(r.id, { renk: isGreen ? null : 'green' })} className={`p-1.5 rounded-md transition-colors ${isGreen ? 'bg-emerald-400 text-emerald-900' : 'text-neutral-500 hover:bg-emerald-200'}`}>
+                      <Paintbrush className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <button onClick={() => setExpandedNotes(p => ({ ...p, [r.id]: !p[r.id] }))} className={`p-2 rounded-lg transition-colors ${r.notlar?.aciklama || r.notlar?.kesilenMt || r.notlar?.kalanMt ? 'text-emerald-600 bg-emerald-100 hover:bg-emerald-200' : 'text-sky-600 bg-white/60 hover:bg-white'}`}>
                     <StickyNote className="h-4 w-4" />
                   </button>
-                  <button onClick={() => setDeleteConfirmId(r.id)} className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                  <button onClick={() => setDeleteConfirmId(r.id)} className="p-2 text-neutral-500 bg-white/60 hover:text-red-600 hover:bg-red-100 rounded-lg transition-colors">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -696,7 +726,8 @@ export function KalanKumasTable() {
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
 
           {/* Mobile Grand Total Card */}
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm mt-6">

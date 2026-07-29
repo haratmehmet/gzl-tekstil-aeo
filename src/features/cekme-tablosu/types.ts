@@ -20,6 +20,7 @@ export interface CekmeFoyu {
   modelKodu: string
   sapKodu: string
   kumasKodu: string
+  renk?: string | null
   fabrics: CekmeKumasDetay[]
   createdAt: string
   updatedAt: string

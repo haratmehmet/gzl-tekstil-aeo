@@ -117,6 +117,13 @@ export default function CekmeTablosuPage() {
     }
   }
 
+  const handleColorChange = (id: string, color: string | null) => {
+    const foy = foyler.find((f) => f.id === id)
+    if (foy) {
+      updateFoy(id, { ...foy, renk: color })
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header & Controls */}
@@ -178,6 +185,7 @@ export default function CekmeTablosuPage() {
               foyler={filteredFoyler}
               onEdit={handleEdit}
               onDelete={deleteFoy}
+              onColorChange={handleColorChange}
             />
           </div>
         </div>
