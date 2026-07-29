@@ -9,6 +9,8 @@ import { Plus, Trash2, DownloadCloud, FileSpreadsheet, Printer, ArrowUpDown, Sti
 import { DebouncedInput } from "@/components/ui/debounced-input"
 import * as ExcelJS from "exceljs"
 
+import { NumericFormat } from "react-number-format"
+
 const formatWhileTyping = (val: string) => {
   if (!val) return "";
   
@@ -45,54 +47,61 @@ const formatWhileTyping = (val: string) => {
 
 function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRowTotal: any, updateRecord: any }) {
   const computedTotal = getRowTotal(record.kumasMetraji, record.birimFiyat)
-  const displayVal = computedTotal === 0 && !record.kumasMetraji ? "" : computedTotal.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 4 })
   
-  const [localVal, setLocalVal] = React.useState<string | null>(null)
+  // Sadece ekranda görünmesi için lokal state (kullanıcı yazarken)
+  const [localVal, setLocalVal] = React.useState<number | undefined>(undefined)
 
   return (
-    <input
-      type="text"
-      value={localVal !== null ? localVal : displayVal}
-      onChange={(e) => {
-        setLocalVal(formatWhileTyping(e.target.value))
+    <NumericFormat
+      thousandSeparator="."
+      decimalSeparator=","
+      decimalScale={2}
+      allowNegative={false}
+      // Kullanıcı aktif olarak yazmıyorsa hesaplanan değeri göster
+      value={localVal !== undefined ? localVal : (computedTotal || "")}
+      onValueChange={(values) => {
+        setLocalVal(values.floatValue)
       }}
       onBlur={() => {
-        if (localVal === null) return
-        if (localVal.trim() === "") {
+        // Eğer kullanıcı alanı tamamen sildiyse veya 0 bıraktıysa sıfırla
+        if (localVal === undefined || localVal === 0) {
           const isKg = record.kumasMetraji.toLowerCase().includes("kg")
           updateRecord(record.id, { kumasMetraji: `0 ${isKg ? "Kg" : "Mt"}` })
-        } else {
-          const cleaned = localVal.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '')
-          const newTotal = parseFloat(cleaned)
-          
-          const f = typeof record.birimFiyat === "number" ? record.birimFiyat : 0
-          const mStr = typeof record.kumasMetraji === 'string' ? record.kumasMetraji.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '') : '0'
-          const m = parseFloat(mStr) || 0
-          
-          const isKg = typeof record.kumasMetraji === 'string' ? record.kumasMetraji.toLowerCase().includes("kg") : false
-          const unit = isKg ? "Kg" : "Mt"
-          
-          if (!isNaN(newTotal)) {
-            if (f > 0) {
-              const newM = newTotal / f
-              const formattedM = newM.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-              updateRecord(record.id, { kumasMetraji: `${formattedM} ${unit}` })
-            } else if (m > 0) {
-              const newF = newTotal / m
-              updateRecord(record.id, { birimFiyat: parseFloat(newF.toFixed(2)) })
-            } else {
-              updateRecord(record.id, { kumasMetraji: `1 ${unit}`, birimFiyat: parseFloat(newTotal.toFixed(6)) })
-            }
+          setLocalVal(undefined)
+          return
+        }
+
+        const newTotal = localVal
+        
+        const f = typeof record.birimFiyat === "number" ? record.birimFiyat : 0
+        const mStr = typeof record.kumasMetraji === 'string' ? record.kumasMetraji.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '') : '0'
+        const m = parseFloat(mStr) || 0
+        
+        const isKg = typeof record.kumasMetraji === 'string' ? record.kumasMetraji.toLowerCase().includes("kg") : false
+        const unit = isKg ? "Kg" : "Mt"
+        
+        if (!isNaN(newTotal)) {
+          if (f > 0) {
+            const newM = newTotal / f
+            const formattedM = newM.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            updateRecord(record.id, { kumasMetraji: `${formattedM} ${unit}` })
+          } else if (m > 0) {
+            const newF = newTotal / m
+            updateRecord(record.id, { birimFiyat: parseFloat(newF.toFixed(2)) })
+          } else {
+            updateRecord(record.id, { kumasMetraji: `1 ${unit}`, birimFiyat: parseFloat(newTotal.toFixed(6)) })
           }
         }
-        setLocalVal(null)
+        
+        // İşlem bitince lokal state'i temizle, computed değer ekranda görünsün
+        setLocalVal(undefined)
       }}
       onKeyDown={(e) => {
         if (e.key === "Enter") {
           e.currentTarget.blur()
         }
       }}
-      placeholder={displayVal}
+      placeholder={computedTotal === 0 && !record.kumasMetraji ? "" : computedTotal.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
       style={{ fontSize: "clamp(9px, 1.1vw, 14px)" }}
       className="relative z-10 w-full h-8 pl-1 pr-4 print:pr-2 bg-transparent focus:bg-white text-right font-black text-neutral-900 tracking-tighter"
     />
