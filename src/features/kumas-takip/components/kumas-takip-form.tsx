@@ -145,7 +145,12 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
   }
 
   // Handle Roll row input changes
-  const handleRollChange = (index: number, field: "topUstundeYazanMt" | "cikanMt", value: string) => {
+  const [rollsHistory, setRollsHistory] = React.useState<RollItem[][]>([])
+
+  const handleRollChange = (index: number, field: keyof RollItem, value: string) => {
+    // Her değişiklikte mevcut rolls state'ini geçmişe ekle (Undo için max 50 adım)
+    setRollsHistory(prev => [...prev.slice(-50), rolls])
+
     setRolls((prevRolls) => {
       const updated = [...prevRolls]
       const roll = { ...updated[index] }
@@ -166,6 +171,19 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
       updated[index] = roll
       return updated
     })
+  }
+
+  const handleUndoRolls = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      setRollsHistory(prev => {
+        if (prev.length === 0) return prev;
+        const newHistory = [...prev];
+        const lastState = newHistory.pop();
+        if (lastState) setRolls(lastState);
+        return newHistory;
+      });
+    }
   }
 
   // Calculate sum of "TOP ÜSTÜNDE YAZAN MT" to update "GELEN METRAJ" dynamically
@@ -1127,6 +1145,7 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
                                 min="0"
                                 value={roll.topUstundeYazanMt === 0 ? "" : roll.topUstundeYazanMt}
                                 onChange={(e) => handleRollChange(index, "topUstundeYazanMt", e.target.value)}
+                                onKeyDown={handleUndoRolls}
                                 className="h-8 text-[11px] text-center border-neutral-200 max-w-[150px] mx-auto font-medium"
                                 placeholder="0,00"
                               />
@@ -1140,6 +1159,7 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
                                 min="0"
                                 value={roll.cikanMt ?? ""}
                                 onChange={(e) => handleRollChange(index, "cikanMt", e.target.value)}
+                                onKeyDown={handleUndoRolls}
                                 className="h-8 text-[11px] text-center border-neutral-200 max-w-[150px] mx-auto font-medium"
                                 placeholder="0,00"
                               />
