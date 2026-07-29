@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { BackupService } from "@/features/backup/services/backup-service";
 import { createBackupLog, updateBackupLog, logBackupStep } from "@/features/backup/actions";
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   try {
     const authHeader = request.headers.get("authorization");
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
