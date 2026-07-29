@@ -50,7 +50,6 @@ function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRow
   
   // Sadece ekranda görünmesi için lokal state (kullanıcı yazarken)
   const [localVal, setLocalVal] = React.useState<number | undefined>(undefined)
-  const [history, setHistory] = React.useState<number[]>([])
 
   return (
     <NumericFormat
@@ -61,13 +60,6 @@ function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRow
       // Kullanıcı aktif olarak yazmıyorsa hesaplanan değeri göster
       value={localVal !== undefined ? localVal : (computedTotal || "")}
       onValueChange={(values) => {
-        setHistory(prev => {
-          // Sadece değer gerçekten değiştiyse geçmişe ekle
-          if (localVal !== undefined) {
-             return [...prev.slice(-50), localVal];
-          }
-          return prev;
-        });
         setLocalVal(values.floatValue)
       }}
       onBlur={() => {
@@ -76,7 +68,6 @@ function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRow
           const isKg = record.kumasMetraji.toLowerCase().includes("kg")
           updateRecord(record.id, { kumasMetraji: `0 ${isKg ? "Kg" : "Mt"}` })
           setLocalVal(undefined)
-          setHistory([])
           return
         }
 
@@ -104,20 +95,8 @@ function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRow
         
         // İşlem bitince lokal state'i temizle, computed değer ekranda görünsün
         setLocalVal(undefined)
-        setHistory([])
       }}
       onKeyDown={(e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-          e.preventDefault();
-          setHistory(prev => {
-            if (prev.length === 0) return prev;
-            const newHistory = [...prev];
-            const lastState = newHistory.pop();
-            setLocalVal(lastState);
-            return newHistory;
-          });
-          return;
-        }
         if (e.key === "Enter") {
           e.currentTarget.blur()
         }
