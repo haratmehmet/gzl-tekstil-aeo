@@ -189,6 +189,11 @@ export async function PUT(request: Request) {
     })
 
     if (existingDepo) {
+      const harcanan = parseFloat((existingDepo.harcananMetraj || "0").replace(/[^0-9.,-]/g, '').replace(',', '.')) || 0;
+      const gelen = updatedRecord.gelenMetraj || 0;
+      const net = gelen - harcanan;
+      const netFormatted = `${net.toFixed(2).replace('.', ',')} ${updatedRecord.birim === 'KG' ? 'Kg' : 'Mt'}`;
+
       await prisma.kumasDeposu.update({
         where: { id: existingDepo.id },
         data: {
@@ -198,7 +203,8 @@ export async function PUT(request: Request) {
           sezon: updatedRecord.sezon || "",
           kumasKodu: updatedRecord.kumasKodu || "",
           gelenMetraj: formattedAmount,
-          baglananModel: `${updatedRecord.baglandigiModel || ""} - ${updatedRecord.kullanildigiYer || ""}`.trim().replace(/^-|-$/g, "").trim()
+          baglananModel: `${updatedRecord.baglandigiModel || ""} - ${updatedRecord.kullanildigiYer || ""}`.trim().replace(/^-|-$/g, "").trim(),
+          netMetraj: netFormatted
         }
       })
     } else {
