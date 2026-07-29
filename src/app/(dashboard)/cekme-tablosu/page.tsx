@@ -50,6 +50,8 @@ export default function CekmeTablosuPage() {
 
   // Validate or fallback to first available
   React.useEffect(() => {
+    if (!isCekmeLoaded || !isTakipLoaded) return;
+
     if (availableFilters.length > 0 && !availableFilters.includes(activeFilter)) {
       const saved = localStorage.getItem("cekmeTablosuFilter")
       if (saved && availableFilters.includes(saved)) {
@@ -58,14 +60,16 @@ export default function CekmeTablosuPage() {
         setActiveFilter(availableFilters[0])
       }
     }
-  }, [availableFilters, activeFilter])
+  }, [availableFilters, activeFilter, isCekmeLoaded, isTakipLoaded])
 
   // Save to localStorage when changed
   React.useEffect(() => {
-    if (activeFilter && availableFilters.includes(activeFilter)) {
+    if (!isCekmeLoaded || !isTakipLoaded) return;
+    
+    if (activeFilter && availableFilters.includes(activeFilter) && activeFilter !== "Kayıt Yok") {
       localStorage.setItem("cekmeTablosuFilter", activeFilter)
     }
-  }, [activeFilter, availableFilters])
+  }, [activeFilter, availableFilters, isCekmeLoaded, isTakipLoaded])
 
   // Yükleme sırasında animasyon göster
   if (!isCekmeLoaded || !isTakipLoaded) {
