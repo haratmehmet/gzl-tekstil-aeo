@@ -39,13 +39,14 @@ export function useCekmeStore() {
 
   const updateFoy = async (id: string, updatedFoy: CekmeFoyu) => {
     try {
-      const res = await fetch("/api/cekme-tablosu", {
+      // Optimistic update
+      setFoyler(prev => prev.map(f => f.id === id ? updatedFoy : f))
+
+      fetch("/api/cekme-tablosu", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedFoy),
-      })
-      if (!res.ok) throw new Error("Failed to update")
-      await fetchFoyler()
+      }).catch(err => console.error("Arka plan güncelleme hatası:", err))
     } catch (error) {
       console.error("Update error:", error)
       alert("Güncellenirken bir hata oluştu.")

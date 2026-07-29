@@ -110,11 +110,9 @@ export function CekmeList({ foyler, onEdit, onDelete, onColorChange }: CekmeList
                           e.stopPropagation()
                           onColorChange?.(foy.id, isRed ? null : 'red')
                         }} 
-                        className={`p-1.5 rounded-md transition-colors ${isRed ? 'text-red-600 bg-red-200 hover:bg-red-300' : 'text-neutral-400 hover:text-red-500 hover:bg-red-50'}`}
-                        title="Kırmızı ile Boya"
-                      >
-                        <Paintbrush className="h-4 w-4" />
-                      </button>
+                        className={`w-6 h-6 rounded-full border-2 ${isRed ? 'border-rose-800 scale-110 bg-rose-200' : 'border-rose-200 bg-rose-100'} hover:scale-110 transition-transform shadow-sm`}
+                        title={isRed ? 'Temizle' : 'Kırmızı Boya'}
+                      />
                       <button 
                         onClick={(e) => {
                           e.stopPropagation()
@@ -180,11 +178,9 @@ export function CekmeList({ foyler, onEdit, onDelete, onColorChange }: CekmeList
                       e.stopPropagation()
                       onColorChange?.(foy.id, isRed ? null : 'red')
                     }} 
-                    className={`p-1.5 rounded-md transition-colors flex items-center gap-1.5 ${isRed ? 'text-red-600 bg-red-100 hover:bg-red-200' : 'text-neutral-400 hover:text-red-500 hover:bg-red-50'}`}
-                  >
-                    <Paintbrush className="h-4 w-4" />
-                    <span className="text-xs font-bold">{isRed ? 'TEMİZLE' : 'BOYA'}</span>
-                  </button>
+                    className={`w-6 h-6 rounded-full border-2 ${isRed ? 'border-rose-800 scale-110 bg-rose-200' : 'border-rose-200 bg-rose-100'} hover:scale-110 transition-transform shadow-sm`}
+                    title={isRed ? 'Temizle' : 'Kırmızı Boya'}
+                  />
                   <button 
                     onClick={(e) => {
                       e.stopPropagation()

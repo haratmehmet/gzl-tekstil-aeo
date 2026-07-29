@@ -479,15 +479,9 @@ export function KalanKumasTable() {
                   </td>
                   <td className="p-1 text-center align-middle print:hidden w-[100px]">
                     <div className="flex items-center justify-center gap-0.5">
-                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'yellow' ? null : 'yellow' })} className={`p-1 rounded transition-colors ${r.renk === 'yellow' ? 'bg-yellow-400 text-yellow-900' : 'text-neutral-400 hover:bg-yellow-200 hover:text-yellow-700'}`} title="Sarı">
-                        <Paintbrush className="h-3 w-3" />
-                      </button>
-                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'red' ? null : 'red' })} className={`p-1 rounded transition-colors ${r.renk === 'red' ? 'bg-red-400 text-red-900' : 'text-neutral-400 hover:bg-red-200 hover:text-red-700'}`} title="Kırmızı">
-                        <Paintbrush className="h-3 w-3" />
-                      </button>
-                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'green' ? null : 'green' })} className={`p-1 rounded transition-colors ${r.renk === 'green' ? 'bg-emerald-400 text-emerald-900' : 'text-neutral-400 hover:bg-emerald-200 hover:text-emerald-700'}`} title="Yeşil">
-                        <Paintbrush className="h-3 w-3" />
-                      </button>
+                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'yellow' ? null : 'yellow' })} className={`w-5 h-5 rounded-full border-2 ${r.renk === 'yellow' ? 'border-yellow-600 scale-110 bg-yellow-300' : 'border-yellow-200 bg-yellow-100'} hover:scale-110 transition-transform shadow-sm`} title="Sarı" />
+                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'red' ? null : 'red' })} className={`w-5 h-5 rounded-full border-2 ${r.renk === 'red' ? 'border-rose-800 scale-110 bg-rose-200' : 'border-rose-200 bg-rose-100'} hover:scale-110 transition-transform shadow-sm`} title="Kırmızı" />
+                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'green' ? null : 'green' })} className={`w-5 h-5 rounded-full border-2 ${r.renk === 'green' ? 'border-emerald-800 scale-110 bg-emerald-200' : 'border-emerald-200 bg-emerald-100'} hover:scale-110 transition-transform shadow-sm`} title="Yeşil" />
                       <div className="w-px h-4 bg-neutral-300 mx-0.5" />
                       <button onClick={() => setDeleteConfirmId(r.id)} className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors" title="Sil">
                         <Trash2 className="h-3.5 w-3.5" />
@@ -600,16 +594,10 @@ export function KalanKumasTable() {
                   />
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="flex bg-white/60 p-0.5 rounded-lg border border-white/50 backdrop-blur-sm mr-1">
-                    <button onClick={() => updateRecord(r.id, { renk: isYellow ? null : 'yellow' })} className={`p-1.5 rounded-md transition-colors ${isYellow ? 'bg-yellow-400 text-yellow-900' : 'text-neutral-500 hover:bg-yellow-200'}`}>
-                      <Paintbrush className="h-4 w-4" />
-                    </button>
-                    <button onClick={() => updateRecord(r.id, { renk: isRed ? null : 'red' })} className={`p-1.5 rounded-md transition-colors ${isRed ? 'bg-red-400 text-red-900' : 'text-neutral-500 hover:bg-red-200'}`}>
-                      <Paintbrush className="h-4 w-4" />
-                    </button>
-                    <button onClick={() => updateRecord(r.id, { renk: isGreen ? null : 'green' })} className={`p-1.5 rounded-md transition-colors ${isGreen ? 'bg-emerald-400 text-emerald-900' : 'text-neutral-500 hover:bg-emerald-200'}`}>
-                      <Paintbrush className="h-4 w-4" />
-                    </button>
+                  <div className="flex bg-white/60 p-1 rounded-lg border border-white/50 backdrop-blur-sm mr-1 gap-1 items-center">
+                    <button onClick={() => updateRecord(r.id, { renk: isYellow ? null : 'yellow' })} className={`w-5 h-5 rounded-full border-2 ${isYellow ? 'border-yellow-600 scale-110 bg-yellow-300' : 'border-yellow-200 bg-yellow-100'} hover:scale-110 transition-transform shadow-sm`} />
+                    <button onClick={() => updateRecord(r.id, { renk: isRed ? null : 'red' })} className={`w-5 h-5 rounded-full border-2 ${isRed ? 'border-rose-800 scale-110 bg-rose-200' : 'border-rose-200 bg-rose-100'} hover:scale-110 transition-transform shadow-sm`} />
+                    <button onClick={() => updateRecord(r.id, { renk: isGreen ? null : 'green' })} className={`w-5 h-5 rounded-full border-2 ${isGreen ? 'border-emerald-800 scale-110 bg-emerald-200' : 'border-emerald-200 bg-emerald-100'} hover:scale-110 transition-transform shadow-sm`} />
                   </div>
                   <button onClick={() => setExpandedNotes(p => ({ ...p, [r.id]: !p[r.id] }))} className={`p-2 rounded-lg transition-colors ${r.notlar?.aciklama || r.notlar?.kesilenMt || r.notlar?.kalanMt ? 'text-emerald-600 bg-emerald-100 hover:bg-emerald-200' : 'text-sky-600 bg-white/60 hover:bg-white'}`}>
                     <StickyNote className="h-4 w-4" />
