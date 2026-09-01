@@ -19,14 +19,7 @@ export async function POST(request: Request) {
     const service = new BackupService();
 
     if (action === "GET_STATS") {
-      const drive = service.getDriveAuth();
       let quota = null;
-      try {
-        const quotaRes = await drive.about.get({ fields: "storageQuota" });
-        quota = quotaRes.data.storageQuota;
-      } catch (e) {
-        console.error("Drive quota error", e);
-      }
 
       const totalBackups = await prisma.backupLog.count({ where: { action: "BACKUP" } });
       const successfulBackups = await prisma.backupLog.count({ where: { action: "BACKUP", status: "SUCCESS" } });
@@ -85,19 +78,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, message: "Yedekleme başarıyla tamamlandı." });
     }
 
-    if (action === "RESTORE") {
-      const { fileId, password } = body;
-      if (!fileId) throw new Error("Dosya ID'si eksik");
-      if (!password) throw new Error("Şifre girmelisiniz");
-
-      const bcrypt = require("bcryptjs");
-      const isValid = await bcrypt.compare(password, user.password);
-      if (!isValid) throw new Error("Hatalı yönetici şifresi");
-      
-      await runAsyncRestore(fileId);
-      return NextResponse.json({ success: true, message: "Geri yükleme işlemi başarıyla tamamlandı. Sayfayı yenileyebilirsiniz." });
-    }
-
     return NextResponse.json({ success: false, message: "Geçersiz işlem" }, { status: 400 });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -133,30 +113,3 @@ async function runAsyncBackup() {
   }
 }
 
-async function runAsyncRestore(fileId: string) {
-  let logId = "";
-  try {
-    const service = new BackupService();
-    const log = await createBackupLog("RESTORE", fileId);
-    logId = log.id;
-
-    await service.restoreFromDrive(fileId, async (msg) => {
-      console.log(`[RESTORE ADMIN] ${msg}`);
-      await logBackupStep(logId, msg);
-    });
-
-    await updateBackupLog(logId, {
-      status: "SUCCESS",
-      completedAt: new Date(),
-    });
-  } catch (err: any) {
-    console.error("[RESTORE ADMIN ERROR]", err);
-    if (logId) {
-      await updateBackupLog(logId, {
-        status: "FAILED",
-        errorMessage: err.message || "Bilinmeyen hata",
-        completedAt: new Date(),
-      });
-    }
-  }
-}

@@ -208,7 +208,7 @@ export function BackupClient({ initialLogs }: any) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatBytes(stats?.totalSize || 0)}</div>
-            <p className="text-xs text-muted-foreground mt-1">Drive Kota: {parseQuota(stats?.quota)}</p>
+            <p className="text-xs text-muted-foreground mt-1">E-Posta Ek Boyutu</p>
           </CardContent>
         </Card>
 
@@ -219,7 +219,7 @@ export function BackupClient({ initialLogs }: any) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">03:00</div>
-            <p className="text-xs text-muted-foreground mt-1">Her gün (30 Gün Saklama)</p>
+            <p className="text-xs text-muted-foreground mt-1">Her gün (E-Posta gönderimi)</p>
           </CardContent>
         </Card>
 
@@ -230,7 +230,7 @@ export function BackupClient({ initialLogs }: any) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-emerald-600">AES-256</div>
-            <p className="text-xs text-muted-foreground mt-1">Uçtan uca şifreli Drive transferi</p>
+            <p className="text-xs text-muted-foreground mt-1">Uçtan uca şifreli e-posta transferi</p>
           </CardContent>
         </Card>
       </div>
@@ -241,7 +241,7 @@ export function BackupClient({ initialLogs }: any) {
           <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
             <div>
               <h3 className="text-lg font-bold">Manuel Yedekleme</h3>
-              <p className="text-sm text-neutral-500 mt-1">Sistemin mevcut durumunu anında şifreleyerek Google Drive'a aktarır.</p>
+              <p className="text-sm text-neutral-500 mt-1">Sistemin mevcut durumunu anında şifreleyerek belirlediğiniz e-posta adresine gönderir.</p>
             </div>
             
             <div className="flex-1 w-full max-w-md">
