@@ -815,25 +815,37 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
       styleCell(`B${currentRow}`, cekmeBoy !== "" ? `${cekmeBoy}%` : "", { bg: "#38bdf8", bold: true, color: "#000000", size: 9 })
       worksheet.getRow(currentRow).height = 24
 
-      // Style merged cells — now C:E and F
+      // Style merged cells for KUMAŞ NUMUNESİ (C:D) and Numune Kutusu (E)
+      const borderThin = { style: "thin" as const, color: { argb: "FF000000" } }
       for (let r = startDetailRow; r <= startDetailRow + 3; r++) {
-        for (const col of ["C", "D", "E", "F"]) {
-          const cellX = worksheet.getCell(`${col}${r}`)
-          cellX.border = {
-            top: { style: "thin", color: { argb: "FFD4D4D4" } },
-            left: { style: "thin", color: { argb: "FFD4D4D4" } },
-            bottom: { style: "thin", color: { argb: "FFD4D4D4" } },
-            right: { style: "thin", color: { argb: "FFD4D4D4" } },
-          }
+        const isTop = r === startDetailRow
+        const isBottom = r === startDetailRow + 3
+
+        const cellC = worksheet.getCell(`C${r}`)
+        cellC.border = {
+          top: isTop ? borderThin : undefined,
+          bottom: isBottom ? borderThin : undefined,
+          left: borderThin,
+        }
+
+        const cellD = worksheet.getCell(`D${r}`)
+        cellD.border = {
+          top: isTop ? borderThin : undefined,
+          bottom: isBottom ? borderThin : undefined,
+          right: borderThin,
+        }
+
+        const cellE = worksheet.getCell(`E${r}`)
+        cellE.border = {
+          top: isTop ? borderThin : undefined,
+          bottom: isBottom ? borderThin : undefined,
+          left: borderThin,
+          right: borderThin,
         }
       }
 
       const sampleLabelCell = worksheet.getCell(`C${startDetailRow}`)
       sampleLabelCell.alignment = { vertical: "middle", horizontal: "center", wrapText: true }
-
-      const sampleInstructCell = worksheet.getCell(`F${startDetailRow}`)
-      sampleInstructCell.alignment = { vertical: "middle", horizontal: "center", wrapText: true }
-      sampleInstructCell.font = { name: "Arial", size: 9, bold: true, color: { argb: "FFDC2626" }, underline: true }
 
       const buffer = await workbook.xlsx.writeBuffer()
       const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
