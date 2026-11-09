@@ -106,7 +106,7 @@ function TotalInput({ record, getRowTotal, updateRecord }: { record: any, getRow
         }
       }}
       placeholder={computedTotal === 0 && !record.kumasMetraji ? "" : computedTotal.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
-      style={{ fontSize: "clamp(9px, 1.1vw, 14px)" }}
+      style={{ fontSize: "clamp(9.5px, 0.9vw, 12.5px)" }}
       className="relative z-10 w-full h-8 pl-1 pr-4 print:pr-2 bg-transparent focus:bg-white text-right font-black text-neutral-900 tracking-tighter"
     />
   )
@@ -234,14 +234,14 @@ export function KalanKumasTable() {
     const worksheet = workbook.addWorksheet("Kalan Kumaş Stok")
 
     worksheet.columns = [
-      { key: "faturaNo", width: 15 },
-      { key: "malzemeKodu", width: 15 },
+      { key: "faturaNo", width: 22 },
+      { key: "malzemeKodu", width: 18 },
       { key: "faturaTarih", width: 15 },
       { key: "depoyaGirisTarihi", width: 20 },
-      { key: "kumasKodu", width: 20 },
-      { key: "kumasMetraji", width: 15 },
-      { key: "birimFiyat", width: 15 },
-      { key: "toplamTutar", width: 18 },
+      { key: "kumasKodu", width: 28 },
+      { key: "kumasMetraji", width: 16 },
+      { key: "birimFiyat", width: 16 },
+      { key: "toplamTutar", width: 20 },
     ]
 
     worksheet.mergeCells("A1:B1")
@@ -277,7 +277,7 @@ export function KalanKumasTable() {
     })
     headerRow.height = 25
 
-    records.forEach((r) => {
+    sortedRecords.forEach((r) => {
       worksheet.addRow({
         faturaNo: r.faturaNo,
         malzemeKodu: r.malzemeKodu,
@@ -383,26 +383,26 @@ export function KalanKumasTable() {
           <table className="w-full text-left border-collapse select-none table-fixed print:table-auto">
             <thead>
               <tr className="text-[10px] font-bold uppercase tracking-wider text-center border-b border-neutral-300">
-                <th className="bg-neutral-100 text-neutral-400 px-1 py-3 w-[3%] print:hidden"></th>
-                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[11%]">FATURA NO</th>
-                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[13%]">MALZEME KODU</th>
-                <th className="bg-orange-200/80 text-orange-900 border-r border-neutral-300 w-[9%]">
+                <th className="bg-neutral-100 text-neutral-400 px-1 py-3 w-[2.5%] print:hidden"></th>
+                <th className="bg-orange-200/80 text-orange-900 px-1 py-3 border-r border-neutral-300 w-[14%] print:w-[15%]">FATURA NO</th>
+                <th className="bg-orange-200/80 text-orange-900 px-1 py-3 border-r border-neutral-300 w-[10.5%] print:w-[12%]">MALZEME KODU</th>
+                <th className="bg-orange-200/80 text-orange-900 border-r border-neutral-300 w-[8.5%] print:w-[10%]">
                   <button onClick={() => requestSort("faturaTarih")} className="allow-viewer w-full h-full px-1 py-3 flex items-center justify-center gap-1 hover:bg-orange-300/50 transition-colors">
                     FATURA TARİH
-                    <ArrowUpDown className="h-3 w-3 opacity-70" />
+                    <ArrowUpDown className="h-3 w-3 opacity-70 print:hidden" />
                   </button>
                 </th>
-                <th className="bg-sky-400 text-sky-950 border-r border-neutral-300 w-[9%]">
+                <th className="bg-sky-400 text-sky-950 border-r border-neutral-300 w-[8.5%] print:w-[10%]">
                   <button onClick={() => requestSort("depoyaGirisTarihi")} className="allow-viewer w-full h-full px-1 py-3 flex items-center justify-center gap-1 hover:bg-sky-500/50 transition-colors">
                     DEPOYA GİRİŞ<br/>TARİHİ
-                    <ArrowUpDown className="h-3 w-3 opacity-70" />
+                    <ArrowUpDown className="h-3 w-3 opacity-70 print:hidden" />
                   </button>
                 </th>
-                <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[12%]">KUMAŞ KODU</th>
-                <th className="bg-sky-400 text-sky-950 px-2 py-3 border-r border-neutral-300 w-[9%]">KUMAŞ<br/>MT/KG</th>
-                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[10%]">BİRİM FİYAT</th>
-                <th className="bg-orange-200/80 text-orange-900 px-2 py-3 border-r border-neutral-300 w-[13%]">TOPLAM TUTAR</th>
-                <th className="bg-neutral-100 text-neutral-400 px-2 py-3 w-[11%] print:hidden"></th>
+                <th className="bg-sky-400 text-sky-950 px-1 py-3 border-r border-neutral-300 w-[15.5%] print:w-[18%]">KUMAŞ KODU</th>
+                <th className="bg-sky-400 text-sky-950 px-1 py-3 border-r border-neutral-300 w-[8%] print:w-[10%]">KUMAŞ<br/>MT/KG</th>
+                <th className="bg-orange-200/80 text-orange-900 px-1 py-3 border-r border-neutral-300 w-[11.5%] print:w-[11%]">BİRİM FİYAT</th>
+                <th className="bg-orange-200/80 text-orange-900 px-1 py-3 border-r border-neutral-300 w-[13%] print:w-[14%]">TOPLAM TUTAR</th>
+                <th className="bg-neutral-100 text-neutral-400 px-1 py-3 w-[8%] print:hidden"></th>
               </tr>
             </thead>
             <tbody className="text-[11px] font-semibold text-neutral-800 divide-y divide-neutral-200">
@@ -418,14 +418,16 @@ export function KalanKumasTable() {
                     <DebouncedInput
                       value={r.faturaNo}
                       onChange={(val) => updateRecord(r.id, { faturaNo: String(val).toUpperCase()  })}
-                      className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-neutral-700 print:text-[10px]"
+                      style={{ fontSize: "clamp(10px, 0.85vw, 12px)" }}
+                      className="w-full min-w-0 h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-neutral-700 tracking-tight print:text-[10px]"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200">
                     <DebouncedInput
                       value={r.malzemeKodu}
                       onChange={(val) => updateRecord(r.id, { malzemeKodu: String(val).toUpperCase()  })}
-                      className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-neutral-700 print:text-[10px]"
+                      style={{ fontSize: "clamp(10px, 0.85vw, 12px)" }}
+                      className="w-full min-w-0 h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-neutral-700 tracking-tight print:text-[10px]"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200">
@@ -433,7 +435,8 @@ export function KalanKumasTable() {
                       type="date"
                       value={r.faturaTarih}
                       onChange={(val) => updateRecord(r.id, { faturaTarih: String(val)  })}
-                      className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center text-neutral-700 print:text-[9px]"
+                      style={{ fontSize: "clamp(9.5px, 0.8vw, 11px)" }}
+                      className="w-full min-w-0 h-8 px-0.5 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center text-neutral-700 print:text-[9px] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:p-0 [&::-webkit-calendar-picker-indicator]:opacity-60 print:[&::-webkit-calendar-picker-indicator]:hidden"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200">
@@ -441,7 +444,8 @@ export function KalanKumasTable() {
                       type="date"
                       value={r.depoyaGirisTarihi}
                       onChange={(val) => updateRecord(r.id, { depoyaGirisTarihi: String(val)  })}
-                      className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center text-neutral-700 print:text-[9px]"
+                      style={{ fontSize: "clamp(9.5px, 0.8vw, 11px)" }}
+                      className="w-full min-w-0 h-8 px-0.5 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center text-neutral-700 print:text-[9px] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:p-0 [&::-webkit-calendar-picker-indicator]:opacity-60 print:[&::-webkit-calendar-picker-indicator]:hidden"
                     />
                   </td>
 
@@ -449,14 +453,15 @@ export function KalanKumasTable() {
                     <DebouncedInput
                       value={r.kumasKodu}
                       onChange={(val) => updateRecord(r.id, { kumasKodu: String(val).toUpperCase()  })}
-                      className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-black text-sky-900 print:text-[10px]"
+                      style={{ fontSize: "clamp(9.5px, 0.85vw, 12px)" }}
+                      className="w-full min-w-0 h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-black text-sky-900 tracking-tight print:text-[9.5px]"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200 bg-sky-50/20">
                     <MetrajInput 
                       record={r} 
                       updateRecord={updateRecord} 
-                      className="w-full min-w-[40px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-sky-800 print:text-[10px]"
+                      className="w-full min-w-0 h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-center font-bold text-sky-800 text-[11px] print:text-[10px]"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200">
@@ -465,23 +470,23 @@ export function KalanKumasTable() {
                       step="any"
                       value={r.birimFiyat ?? ""}
                       onChange={(val) => updateRecord(r.id, { birimFiyat: String(val) ? parseFloat(String(val)) : ""  })}
-                      style={{ fontSize: "clamp(9px, 1.1vw, 14px)" }}
-                      className="w-full min-w-[30px] h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-right font-bold text-neutral-700 tracking-tighter print:text-[9px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      style={{ fontSize: "clamp(9.5px, 0.85vw, 12px)" }}
+                      className="w-full min-w-0 h-8 px-1 print:px-0 bg-transparent focus:outline-none focus:bg-white text-right font-bold text-neutral-700 tracking-tighter print:text-[9.5px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </td>
                   <td className="p-1 border-r border-neutral-200">
                     <div className="relative">
                       <TotalInput record={r} getRowTotal={getRowTotal} updateRecord={updateRecord} />
-                      <span className="absolute right-1 top-1/2 -translate-y-1/2 text-neutral-400 font-bold select-none z-20 pointer-events-none" style={{ fontSize: "clamp(9px, 1.1vw, 14px)" }}>
+                      <span className="absolute right-1 top-1/2 -translate-y-1/2 text-neutral-400 font-bold select-none z-20 pointer-events-none text-xs" style={{ fontSize: "clamp(9px, 0.9vw, 12px)" }}>
                         ₺
                       </span>
                     </div>
                   </td>
-                  <td className="p-1 text-center align-middle print:hidden w-[100px]">
+                  <td className="p-1 text-center align-middle print:hidden w-[8%]">
                     <div className="flex items-center justify-center gap-0.5">
-                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'yellow' ? null : 'yellow' })} className={`w-5 h-5 rounded-full border-2 ${r.renk === 'yellow' ? 'border-yellow-600 scale-110 bg-yellow-300' : 'border-yellow-200 bg-yellow-100'} hover:scale-110 transition-transform shadow-sm`} title="Sarı" />
-                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'red' ? null : 'red' })} className={`w-5 h-5 rounded-full border-2 ${r.renk === 'red' ? 'border-rose-800 scale-110 bg-rose-200' : 'border-rose-200 bg-rose-100'} hover:scale-110 transition-transform shadow-sm`} title="Kırmızı" />
-                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'green' ? null : 'green' })} className={`w-5 h-5 rounded-full border-2 ${r.renk === 'green' ? 'border-emerald-800 scale-110 bg-emerald-200' : 'border-emerald-200 bg-emerald-100'} hover:scale-110 transition-transform shadow-sm`} title="Yeşil" />
+                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'yellow' ? null : 'yellow' })} className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 ${r.renk === 'yellow' ? 'border-yellow-600 scale-110 bg-yellow-300' : 'border-yellow-200 bg-yellow-100'} hover:scale-110 transition-transform shadow-sm`} title="Sarı" />
+                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'red' ? null : 'red' })} className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 ${r.renk === 'red' ? 'border-rose-800 scale-110 bg-rose-200' : 'border-rose-200 bg-rose-100'} hover:scale-110 transition-transform shadow-sm`} title="Kırmızı" />
+                      <button onClick={() => updateRecord(r.id, { renk: r.renk === 'green' ? null : 'green' })} className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 ${r.renk === 'green' ? 'border-emerald-800 scale-110 bg-emerald-200' : 'border-emerald-200 bg-emerald-100'} hover:scale-110 transition-transform shadow-sm`} title="Yeşil" />
                       <div className="w-px h-4 bg-neutral-300 mx-0.5" />
                       <button onClick={() => setDeleteConfirmId(r.id)} className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors" title="Sil">
                         <Trash2 className="h-3.5 w-3.5" />
@@ -768,6 +773,25 @@ export function KalanKumasTable() {
           </div>
         </div>
       )}
+      {/* Print Specific CSS */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @media print {
+          @page { 
+            size: A4 landscape; 
+            margin: 6mm; 
+          }
+          * { 
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important; 
+          }
+          body {
+            background: white !important;
+          }
+          .print\\:hidden {
+            display: none !important;
+          }
+        }
+      `}} />
     </Card>
   )
 }
