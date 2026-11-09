@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Save, RotateCcw, FileSpreadsheet, FileText, AlertTriangle } from "lucide-react"
+import { Save, RotateCcw, FileSpreadsheet, FileText, AlertTriangle, Printer } from "lucide-react"
 import { syncKumasToKalanKumas } from "@/features/kalan-kumas/kalan-kumas-store"
 import { useKumasTakipStore } from "../useKumasTakipStore"
 import { NumericFormat } from "react-number-format"
@@ -44,6 +44,10 @@ interface KumasTakipFormProps {
   onSave: (sheet: KumasTakipSheet) => void
   onNew: () => void
 }
+
+// Module-level font cache for instant subsequent PDF generations
+let cachedFontRegular: string | null = null
+let cachedFontBold: string | null = null
 
 export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormProps) {
   const { sheets } = useKumasTakipStore()
@@ -246,10 +250,29 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
     onSave(sheetData)
   }
 
-  // PDF Export — fully programmatic via jsPDF
+  // PDF Export & Print — fully programmatic via jsPDF
   const handleDownloadPDF = async () => {
+    if (!kumasKodu) return
+
+    // 1. Kullanıcı tıklama anında yeni pencere aç (pop-up engelleyiciye takılmaması için doğrudan jestle açılır)
+    const printWindow = typeof window !== "undefined" ? window.open("", "_blank") : null
+    if (printWindow) {
+      try {
+        printWindow.document.title = `Kumaş Takip Föyü - ${kumasKodu}`
+        printWindow.document.body.innerHTML = `
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:80vh;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#333;">
+            <div style="width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#e11d48;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+            <p style="margin-top:16px;font-weight:600;font-size:14px;color:#4b5563;">PDF hazırlanıyor, yazdırma ve kaydetme ekranı açılıyor...</p>
+            <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+          </div>
+        `
+      } catch {
+        // ignore
+      }
+    }
+
     setIsPdfLoading(true)
-    await new Promise(r => setTimeout(r, 80))
+    await new Promise(r => setTimeout(r, 60))
 
     try {
       const { jsPDF } = await import("jspdf")
@@ -265,14 +288,18 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
         return btoa(binary)
       }
 
-      const [fontRegular, fontBold] = await Promise.all([
-        loadFont("/fonts/NotoSans-Regular.ttf"),
-        loadFont("/fonts/NotoSans-Bold.ttf"),
-      ])
+      if (!cachedFontRegular || !cachedFontBold) {
+        const [fontRegular, fontBold] = await Promise.all([
+          cachedFontRegular ? Promise.resolve(cachedFontRegular) : loadFont("/fonts/NotoSans-Regular.ttf"),
+          cachedFontBold ? Promise.resolve(cachedFontBold) : loadFont("/fonts/NotoSans-Bold.ttf"),
+        ])
+        cachedFontRegular = fontRegular
+        cachedFontBold = fontBold
+      }
 
-      pdf.addFileToVFS("NotoSans-Regular.ttf", fontRegular)
+      pdf.addFileToVFS("NotoSans-Regular.ttf", cachedFontRegular)
       pdf.addFont("NotoSans-Regular.ttf", "NotoSans", "normal")
-      pdf.addFileToVFS("NotoSans-Bold.ttf", fontBold)
+      pdf.addFileToVFS("NotoSans-Bold.ttf", cachedFontBold)
       pdf.addFont("NotoSans-Bold.ttf", "NotoSans", "bold")
       pdf.setFont("NotoSans", "normal")
 
@@ -525,11 +552,44 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
       fillRect(attachX, blockY, DA, blockH, GRAYVAL)
       strokeRect(attachX, blockY, DA, blockH)
 
-      // ── Save ────────────────────────────────────────────────────────
-      pdf.save(`kumas-takip-foy-${kumasKodu || "yeni"}.pdf`)
+      // ── PDF Metadata & Yazdır / Kaydet Ekranı ───────────────────────
+      pdf.setProperties({
+        title: `Kumaş Takip Föyü - ${kumasKodu || "Yeni"}`,
+        subject: "Kumaş Takip Föyü",
+        author: "GZL Tekstil",
+      })
+
+      // Otomatik Yazdır / PDF Olarak Kaydet penceresini tetikle
+      pdf.autoPrint({ variant: "non-conform" })
+      pdf.autoPrint({ variant: "javascript" })
+
+      const blob = pdf.output("blob")
+      const blobUrl = URL.createObjectURL(blob)
+
+      if (printWindow && !printWindow.closed) {
+        printWindow.location.href = blobUrl
+      } else {
+        const fallback = window.open(blobUrl, "_blank")
+        if (!fallback) {
+          const a = document.createElement("a")
+          a.href = blobUrl
+          a.target = "_blank"
+          a.click()
+        }
+      }
+
+      // 2 dakika sonra blob hafızasını serbest bırak
+      setTimeout(() => {
+        try {
+          URL.revokeObjectURL(blobUrl)
+        } catch {}
+      }, 120000)
 
     } catch (err) {
       console.error("PDF export error:", err)
+      if (printWindow && !printWindow.closed) {
+        printWindow.close()
+      }
     } finally {
       setIsPdfLoading(false)
     }
@@ -812,11 +872,16 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
             type="button"
             variant="outline"
             onClick={handleDownloadPDF}
-            disabled={!kumasKodu}
+            disabled={!kumasKodu || isPdfLoading}
             className="flex items-center gap-2 text-xs font-semibold border-neutral-200 text-rose-600 hover:text-rose-700 hover:bg-rose-50/50 h-9 rounded-xl disabled:opacity-50"
+            title="PDF Yazdır / Kaydet"
           >
-            <FileText className="h-4 w-4" />
-            PDF İndir
+            {isPdfLoading ? (
+              <div className="h-4 w-4 border-2 border-rose-600 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Printer className="h-4 w-4" />
+            )}
+            PDF İndir / Yazdır
           </Button>
         </div>
         <Button
