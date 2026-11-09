@@ -714,14 +714,15 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
         const roll = i < rolls.length ? rolls[i] : null
         worksheet.mergeCells(`D${currentRow}:E${currentRow}`)
         if (roll) {
+          const hasCikan = typeof roll.cikanMt === "number" && roll.cikanMt > 0
           styleCell(`A${currentRow}`, `TOP ${i + 1}`, { bg: "#fafafa", size: 9, bold: true })
-          styleCell(`B${currentRow}`, roll.topUstundeYazanMt, { numFormat: "#,##0.00" })
-          styleCell(`C${currentRow}`, typeof roll.cikanMt === "number" ? roll.cikanMt : 0, { numFormat: "#,##0.00" })
+          styleCell(`B${currentRow}`, roll.topUstundeYazanMt ? roll.topUstundeYazanMt : "", roll.topUstundeYazanMt ? { numFormat: "#,##0.00" } : {})
+          styleCell(`C${currentRow}`, hasCikan ? roll.cikanMt : "", hasCikan ? { numFormat: "#,##0.00" } : {})
 
           // Variance coloring conditional checks
           let varBg = "#f5f5f5"
           let varColor = "#4b5563"
-          if (typeof roll.cikanMt === "number") {
+          if (hasCikan) {
             if (roll.eksikFazlaMetraj < 0) {
               varBg = "#fee2e2" // light red
               varColor = "#b91c1c" // dark red
@@ -730,11 +731,11 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
               varColor = "#047857" // dark green
             }
           }
-          styleCell(`D${currentRow}`, typeof roll.cikanMt === "number" ? roll.eksikFazlaMetraj : "-", {
+          styleCell(`D${currentRow}`, hasCikan ? roll.eksikFazlaMetraj : "", {
             bg: varBg,
             color: varColor,
             bold: true,
-            numFormat: typeof roll.cikanMt !== "number" ? undefined : "+#,##0.00;-#,##0.00;0.00",
+            numFormat: hasCikan ? "+#,##0.00;-#,##0.00;0.00" : undefined,
           })
         } else {
           // Render empty placeholder row matching the template
@@ -747,21 +748,26 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
         currentRow++
       }
 
-      // Summary Totals Row — merge A:B for label, D:E for variance
-      worksheet.mergeCells(`A${currentRow}:B${currentRow}`)
+      // Summary Totals Row — A: TOPLAM, B: Gelen Metraj, C: Çıkan Metraj, D:E (merge): Eksik/Fazla
+      const hasAnyCikan = rolls.some(r => typeof r.cikanMt === "number" && r.cikanMt > 0)
+      worksheet.mergeCells(`D${currentRow}:E${currentRow}`)
       styleCell(`A${currentRow}`, "TOPLAM", { bg: "#f3f4f6", bold: true, size: 10 })
-      styleCell(`C${currentRow}`, gelenMetraj, { bg: "#f3f4f6", bold: true, numFormat: "#,##0.00" })
-      styleCell(`D${currentRow}`, cikanMetrajTotal, { bg: "#f3f4f6", bold: true, numFormat: "#,##0.00" })
+      styleCell(`B${currentRow}`, gelenMetraj, { bg: "#f3f4f6", bold: true, numFormat: "#,##0.00" })
+      styleCell(`C${currentRow}`, hasAnyCikan ? cikanMetrajTotal : "", {
+        bg: "#f3f4f6",
+        bold: true,
+        numFormat: hasAnyCikan ? "#,##0.00" : undefined,
+      })
 
       let totalVarColor = "#4b5563"
       if (eksikFazlaMetrajTotal < 0) totalVarColor = "#b91c1c"
       else if (eksikFazlaMetrajTotal > 0) totalVarColor = "#047857"
 
-      styleCell(`E${currentRow}`, eksikFazlaMetrajTotal, {
+      styleCell(`D${currentRow}`, hasAnyCikan ? eksikFazlaMetrajTotal : "", {
         bg: "#f3f4f6",
         color: totalVarColor,
         bold: true,
-        numFormat: "+#,##0.00;-#,##0.00;0.00",
+        numFormat: hasAnyCikan ? "+#,##0.00;-#,##0.00;0.00" : undefined,
       })
       worksheet.getRow(currentRow).height = 26
       currentRow++
