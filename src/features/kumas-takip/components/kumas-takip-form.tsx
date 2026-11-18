@@ -41,7 +41,7 @@ export interface KumasTakipSheet {
 
 interface KumasTakipFormProps {
   initialData?: KumasTakipSheet | null
-  onSave: (sheet: KumasTakipSheet) => void
+  onSave: (sheet: KumasTakipSheet) => Promise<any> | void
   onNew: () => void
   sheets?: KumasTakipSheet[]
 }
@@ -55,6 +55,7 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
   const sheets = passedSheets || storeSheets
   // Form states initialized with initialData or defaults
   const [id, setId] = React.useState("")
+  const [isSaving, setIsSaving] = React.useState(false)
   const [kumasKodu, setKumasKodu] = React.useState("")
   const [kumasciFirma, setKumasciFirma] = React.useState("")
   const [geldigiTarih, setGeldigiTarih] = React.useState("")
@@ -189,9 +190,9 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
     return rolls.reduce((sum, roll) => sum + (roll.eksikFazlaMetraj || 0), 0)
   }, [rolls])
 
-  const handleFormSave = (e?: React.FormEvent, bypassDuplicateCheck = false) => {
+  const handleFormSave = async (e?: React.FormEvent, bypassDuplicateCheck = false) => {
     if (e) e.preventDefault()
-    if (!kumasKodu) return
+    if (!kumasKodu || isSaving) return
 
     const modelTrimmed = baglandigiModel?.trim().toLowerCase()
     const currentId = id || initialData?.id || ""
@@ -270,7 +271,12 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
       })
     }
 
-    onSave(sheetData)
+    setIsSaving(true)
+    try {
+      await onSave(sheetData)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   // PDF Export & Print — fully programmatic via jsPDF
@@ -928,10 +934,20 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
         <Button
           type="button"
           onClick={handleFormSave}
-          disabled={!kumasKodu}
-          className="flex items-center gap-2 text-xs font-semibold bg-neutral-900 hover:bg-neutral-800 text-white shadow h-9 rounded-xl px-4 w-full sm:w-auto justify-center disabled:opacity-50"
+          disabled={!kumasKodu || isSaving}
+          className="flex items-center gap-2 text-xs font-semibold bg-neutral-900 hover:bg-neutral-800 text-white shadow h-9 rounded-xl px-4 w-full sm:w-auto justify-center disabled:opacity-60 transition-all cursor-pointer"
         >
-          {id ? "Föyü Güncelle" : "Föyü Kaydet"}
+          {isSaving ? (
+            <>
+              <div className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>{id ? "Güncelleniyor..." : "Kaydediliyor..."}</span>
+            </>
+          ) : (
+            <>
+              <Save className="h-3.5 w-3.5" />
+              <span>{id ? "Föyü Güncelle" : "Föyü Kaydet"}</span>
+            </>
+          )}
         </Button>
       </div>
 
@@ -1451,11 +1467,12 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
               <Button
                 variant="default"
                 type="button"
-                onClick={() => {
+                disabled={isSaving}
+                onClick={async () => {
                   setShowDuplicateWarning(false)
-                  handleFormSave(undefined, true)
+                  await handleFormSave(undefined, true)
                 }}
-                className="h-8 text-xs font-semibold rounded-xl bg-amber-500 hover:bg-amber-600 text-white"
+                className="h-8 text-xs font-semibold rounded-xl bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-60 cursor-pointer"
               >
                 Yine De Kaydet
               </Button>

@@ -72,19 +72,10 @@ export default function KumasTakipFoyuPage() {
 
   // Save or update sheet
   const handleSaveSheet = async (savedSheet: KumasTakipSheet) => {
-    const isNew = !sheets.some(s => s.id === savedSheet.id)
-    
-    // Server'a kaydet ve dönen gerçek kaydı al (doğru UUID ile)
-    const serverRecord = await saveSheet(savedSheet)
-    
-    // Server'dan dönen gerçek kaydı selectedSheet olarak kullan
-    // Bu sayede bir sonraki güncelleme doğru ID ile PUT yapacak
-    if (serverRecord) {
-      setSelectedSheet(serverRecord)
-    } else {
-      setSelectedSheet(savedSheet)
-    }
+    // 1. Kumaş Takip sunucu kaydını başlat
+    const savePromise = saveSheet(savedSheet)
 
+    // 2. Çekme Tablosu senkronizasyonunu hazırla
     const emptyFabric = { id: "", kullanildigiYer: "", kumasIcerik: "", tedarikci: "", artikelAdi: "", urunDptRenk: "", gelenMetraj: "", kumasEn: "", enCekmeYuzde: "", boyCekmeYuzde: "" }
     
     const baseFabricData = {
@@ -122,7 +113,7 @@ export default function KumasTakipFoyuPage() {
     })
 
     const cekmeRecord = {
-      id: serverRecord?.id || savedSheet.id,
+      id: savedSheet.id,
       sezon: savedSheet.sezon,
       testeGonderilmeTarihi: savedSheet.geldigiTarih || "",
       modelist: "",
@@ -150,6 +141,7 @@ export default function KumasTakipFoyuPage() {
       getEtiketGroup(f.etiket) === targetGroup
     ) : null
 
+    let cekmePromise: Promise<boolean>
     if (existingCekme) {
       // Slot-bazlı merge: her kumaş türü kendi sabit sütununa yerleşir
       const mergedFabrics = [0, 1, 2].map((i) => {
@@ -177,7 +169,7 @@ export default function KumasTakipFoyuPage() {
         return existFab || genFab
       })
 
-      await updateFoy(existingCekme.id, {
+      cekmePromise = updateFoy(existingCekme.id, {
         ...existingCekme,
         sezon: savedSheet.sezon,
         etiket: savedSheet.etiket || existingCekme.etiket,
@@ -186,13 +178,23 @@ export default function KumasTakipFoyuPage() {
         kumasKodu: savedSheet.kumasKodu || existingCekme.kumasKodu,
         fabrics: mergedFabrics
       })
-      showNotification("Çekme tablosundaki bilgiler güncellenmiştir.")
     } else {
       // İlk defa oluşturuluyorsa doğrudan ekle
       cekmeRecord.id = Date.now().toString() + Math.random().toString(36).substr(2, 5)
-      await addFoy(cekmeRecord)
-      showNotification("Çekme tablosuna yeni föy kaydı eklendi.")
+      cekmePromise = addFoy(cekmeRecord)
     }
+
+    // Hem Kumaş Takip hem de Çekme Tablosu güncellemelerini paralel yap (süreyi yarı yarıya indirir)
+    const [serverRecord] = await Promise.all([savePromise, cekmePromise])
+
+    if (serverRecord) {
+      setSelectedSheet(serverRecord)
+    } else {
+      setSelectedSheet(savedSheet)
+    }
+
+    showNotification(existingCekme ? "Çekme tablosundaki bilgiler güncellenmiştir." : "Çekme tablosuna yeni föy kaydı eklendi.")
+    return serverRecord
   }
 
   // Start a fresh form

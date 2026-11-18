@@ -36,10 +36,18 @@ export function useKumasTakipStore() {
 
       if (!res.ok) throw new Error("Failed to save")
       
-      const savedSheet = await res.json()
+      const savedSheet: KumasTakipSheet = await res.json()
       
-      // Kayıttan sonra sunucudan taze ve ilişkili tüm veriyi tekrar çek
-      await fetchSheets()
+      // Tüm veritabanını tekrar indirip bekletmek yerine state'i anında güncelle (0ms gecikme)
+      setSheets((prev) => {
+        const index = prev.findIndex((s) => s.id === savedSheet.id || s.id === sheet.id)
+        if (index >= 0) {
+          const next = [...prev]
+          next[index] = savedSheet
+          return next
+        }
+        return [savedSheet, ...prev]
+      })
       
       return savedSheet
     } catch (error) {
@@ -51,16 +59,17 @@ export function useKumasTakipStore() {
 
   const deleteSheet = async (id: string) => {
     try {
+      // Listeden anında kaldır
+      setSheets((prev) => prev.filter((s) => s.id !== id))
+      
       const res = await fetch(`/api/kumas-takip?id=${id}`, {
         method: "DELETE",
       })
       if (!res.ok) throw new Error("Failed to delete")
-      
-      // Silmeden sonra sunucudan taze veriyi çek
-      await fetchSheets()
     } catch (error) {
       console.error("Delete error:", error)
       alert("Silinirken bir hata oluştu.")
+      await fetchSheets()
     }
   }
 

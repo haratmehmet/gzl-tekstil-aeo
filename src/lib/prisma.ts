@@ -21,4 +21,5 @@ const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
 
 export default prisma
 
-if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma
+// Preserve connection across warm serverless invocations to avoid cold-start TLS re-handshakes
+globalThis.prismaGlobal = prisma

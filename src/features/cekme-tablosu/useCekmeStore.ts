@@ -39,7 +39,8 @@ export function useCekmeStore() {
         const errorData = await res.json().catch(() => null)
         throw new Error(errorData?.error || "Failed to add")
       }
-      await fetchFoyler()
+      const newRecord = await res.json().catch(() => null)
+      setFoyler(prev => [...prev, newRecord || foy])
       return true
     } catch (error) {
       console.error("Add error:", error)
@@ -50,7 +51,7 @@ export function useCekmeStore() {
 
   const updateFoy = async (id: string, updatedFoy: CekmeFoyu): Promise<boolean> => {
     try {
-      // Optimistic update
+      // Optimistic update — ekranda anında güncellenir (0ms)
       setFoyler(prev => prev.map(f => f.id === id ? updatedFoy : f))
 
       const res = await fetch("/api/cekme-tablosu", {
@@ -62,7 +63,6 @@ export function useCekmeStore() {
         const errorData = await res.json().catch(() => null)
         throw new Error(errorData?.error || "Failed to update")
       }
-      await fetchFoyler()
       return true
     } catch (error) {
       console.error("Update error:", error)
@@ -73,14 +73,15 @@ export function useCekmeStore() {
 
   const deleteFoy = async (id: string) => {
     try {
+      setFoyler(prev => prev.filter(f => f.id !== id))
       const res = await fetch(`/api/cekme-tablosu?id=${id}`, {
         method: "DELETE",
       })
       if (!res.ok) throw new Error("Failed to delete")
-      await fetchFoyler()
     } catch (error) {
       console.error("Delete error:", error)
       alert("Silinirken bir hata oluştu.")
+      await fetchFoyler()
     }
   }
 
