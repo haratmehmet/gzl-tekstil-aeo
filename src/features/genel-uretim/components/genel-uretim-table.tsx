@@ -27,7 +27,10 @@ export function GenelUretimTable({ sezonId, markaTipi, sezonAd }: GenelUretimTab
     "fitKalibiGelis",
     "fitDikildi",
     "uretimPastali",
+    "kesimBaslangic",
     "kesimiTamamlandi",
+    "uretimBaslangic",
+    "uretimBitis",
     "kaliteKontrol",
     "teslimTarihi"
   ]
@@ -143,20 +146,29 @@ export function GenelUretimTable({ sezonId, markaTipi, sezonAd }: GenelUretimTab
     const headers = [
       "Sipariş ID", "SAP Kodu", "Model Kodu", "MODELİST", "BÜTÇE ADET", 
       "KUMAŞ GELİŞ TARİHİ", "ÇEKME TESTİ", "FİT KALIBI GELİŞ", 
-      "FİT DİKİLDİ (TESLİM TARİHİ)", "ÜRETİM PASTALI", "KESİMİ TAMAMLANDI", 
+      "FİT DİKİLDİ (TESLİM TARİHİ)", "ÜRETİM PASTALI", "KESİM BAŞLANGIÇ", 
+      "KESİMİ TAMAMLANDI", "ÜRETİM BAŞLANGIÇ", "ÜRETİM BİTİŞ", 
       "KALİTE KONTROL", "TESLİM TARİHİ (DEPO RANDEVU)"
     ]
     
     worksheet.columns = headers.map(h => ({
-      width: h.length < 12 ? 15 : 22,
+      width: h.length < 12 ? 16 : 22,
       style: { alignment: { horizontal: 'center', vertical: 'middle', wrapText: true } }
     }))
     
     worksheet.addRow(headers)
     const headerRow = worksheet.getRow(1)
-    headerRow.font = { bold: true, color: { argb: "FF082F49" } } // text-sky-950
-    headerRow.eachCell(cell => {
-      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF38BDF8" } } // bg-sky-400
+    headerRow.eachCell((cell, colNumber) => {
+      const isYellow = colNumber === 11 || colNumber === 13 || colNumber === 14
+      cell.fill = { 
+        type: "pattern", 
+        pattern: "solid", 
+        fgColor: { argb: isYellow ? "FFFFFF00" : "FF38BDF8" } 
+      }
+      cell.font = { 
+        bold: true, 
+        color: { argb: isYellow ? "FF422006" : "FF082F49" } 
+      }
       cell.border = {
         top: { style: 'thin' },
         left: { style: 'thin' },
@@ -169,7 +181,8 @@ export function GenelUretimTable({ sezonId, markaTipi, sezonAd }: GenelUretimTab
       const row = worksheet.addRow([
         r.siparisId, r.sapKodu, r.modelKodu, r.modelist, r.butceAdet,
         r.kumasGelisTarihi, r.cekmeTesti, r.fitKalibiGelis, r.fitDikildi,
-        r.uretimPastali, r.kesimiTamamlandi, r.kaliteKontrol, r.teslimTarihi
+        r.uretimPastali, r.kesimBaslangic, r.kesimiTamamlandi,
+        r.uretimBaslangic, r.uretimBitis, r.kaliteKontrol, r.teslimTarihi
       ])
 
       let hucreRenkleri: any = {}
@@ -232,22 +245,25 @@ export function GenelUretimTable({ sezonId, markaTipi, sezonAd }: GenelUretimTab
       {/* TABLE */}
       <div className="flex-1 overflow-auto bg-white print:overflow-visible">
         <table className="w-max min-w-full text-left border-collapse table-fixed">
-          <thead className="sticky top-0 bg-sky-400 text-sky-950 shadow-sm z-10 print:static">
+          <thead className="sticky top-0 shadow-sm z-10 print:static">
             <tr className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-center border-b-2 border-neutral-400 leading-tight">
-              <th className="p-1 border border-sky-400 w-44">Sipariş ID</th>
-              <th className="p-1 border border-sky-400 w-32">SAP Kodu</th>
-              <th className="p-1 border border-sky-400 w-32">Model Kodu</th>
-              <th className="p-1 border border-sky-400 w-32">MODELİST</th>
-              <th className="p-1 border border-sky-400 w-24">BÜTÇE</th>
-              <th className="p-1 border border-sky-400 w-32">KUMAŞ GELİŞ<br/>TARİHİ</th>
-              <th className="p-1 border border-sky-400 w-32">ÇEKME TESTİ<br/>TARİHİ</th>
-              <th className="p-1 border border-sky-400 w-32">FİT KALIBI<br/>TARİHİ</th>
-              <th className="p-1 border border-sky-400 w-32">FİT DİKİLDİ<br/>TARİHİ</th>
-              <th className="p-1 border border-sky-400 w-32">ÜRETİM PASTALI</th>
-              <th className="p-1 border border-sky-400 w-32">KESİMİ<br/>TAMAMLANDI</th>
-              <th className="p-1 border border-sky-400 w-32">KALİTE KONTROL</th>
-              <th className="p-1 border border-sky-400 w-36">TESLİM TARİHİ<br/>(DEPO RND)</th>
-              <th className="p-1 border border-sky-400 w-20 print:hidden bg-neutral-100"></th>
+              <th className="p-1 border border-sky-400 bg-sky-400 text-sky-950 w-44">Sipariş ID</th>
+              <th className="p-1 border border-sky-400 bg-sky-400 text-sky-950 w-32">SAP Kodu</th>
+              <th className="p-1 border border-sky-400 bg-sky-400 text-sky-950 w-32">Model Kodu</th>
+              <th className="p-1 border border-sky-400 bg-sky-400 text-sky-950 w-32">MODELİST</th>
+              <th className="p-1 border border-sky-400 bg-sky-400 text-sky-950 w-28">BÜTÇE ADET</th>
+              <th className="p-1 border border-sky-400 bg-sky-400 text-sky-950 w-32">KUMAŞ GELİŞ<br/>TARİHİ</th>
+              <th className="p-1 border border-sky-400 bg-sky-400 text-sky-950 w-32">ÇEKME TESTİ</th>
+              <th className="p-1 border border-sky-400 bg-sky-400 text-sky-950 w-32">FİT KALIBI<br/>GELİŞ</th>
+              <th className="p-1 border border-sky-400 bg-sky-400 text-sky-950 w-36">FİT DİKİLDİ<br/>(TESLİM TARİHİ)</th>
+              <th className="p-1 border border-sky-400 bg-sky-400 text-sky-950 w-32">ÜRETİM PASTALI</th>
+              <th className="p-1 border border-yellow-500 bg-yellow-400 text-yellow-950 w-32">KESİM<br/>BAŞLANGIÇ</th>
+              <th className="p-1 border border-sky-400 bg-sky-400 text-sky-950 w-32">KESİMİ<br/>TAMAMLANDI</th>
+              <th className="p-1 border border-yellow-500 bg-yellow-400 text-yellow-950 w-32">ÜRETİM<br/>BAŞLANGIÇ</th>
+              <th className="p-1 border border-yellow-500 bg-yellow-400 text-yellow-950 w-32">ÜRETİM<br/>BİTİŞ</th>
+              <th className="p-1 border border-sky-400 bg-sky-400 text-sky-950 w-32">KALİTE KONTROL</th>
+              <th className="p-1 border border-sky-400 bg-sky-400 text-sky-950 w-36">TESLİM TARİHİ<br/>(DEPO RANDEVU)</th>
+              <th className="p-1 border border-neutral-300 bg-neutral-100 w-20 print:hidden"></th>
             </tr>
           </thead>
           <tbody className="text-[9px] font-bold text-neutral-800">
@@ -274,7 +290,7 @@ export function GenelUretimTable({ sezonId, markaTipi, sezonAd }: GenelUretimTab
             })}
             {records.length === 0 && (
               <tr>
-                <td colSpan={14} className="p-8 text-center text-neutral-400 font-bold">Kayıt bulunamadı. Yeni satır ekleyerek başlayın.</td>
+                <td colSpan={17} className="p-8 text-center text-neutral-400 font-bold">Kayıt bulunamadı. Yeni satır ekleyerek başlayın.</td>
               </tr>
             )}
           </tbody>

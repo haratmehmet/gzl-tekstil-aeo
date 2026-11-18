@@ -73,7 +73,10 @@ export async function addGenelUretimKayit(sezonId: string, markaTipi: string) {
         fitKalibiGelis: "",
         fitDikildi: "",
         uretimPastali: "",
+        kesimBaslangic: "",
         kesimiTamamlandi: "",
+        uretimBaslangic: "",
+        uretimBitis: "",
         kaliteKontrol: "",
         teslimTarihi: ""
       }

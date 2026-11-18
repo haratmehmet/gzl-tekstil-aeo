@@ -178,7 +178,10 @@ model GenelUretimKayit {
   fitKalibiGelis   String
   fitDikildi       String
   uretimPastali    String
+  kesimBaslangic   String   @default("")
   kesimiTamamlandi String
+  uretimBaslangic  String   @default("")
+  uretimBitis      String   @default("")
   kaliteKontrol    String
   teslimTarihi     String
   
