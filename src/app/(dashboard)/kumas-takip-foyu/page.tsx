@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { CheckCircle2, X } from "lucide-react"
 import { KumasTakipForm, KumasTakipList, KumasTakipSheet, useKumasTakipStore } from "@/features/kumas-takip"
 import { useCekmeStore } from "@/features/cekme-tablosu/useCekmeStore"
 
@@ -38,6 +39,18 @@ export default function KumasTakipFoyuPage() {
   const { sheets, isLoaded: isTakipLoaded, saveSheet, deleteSheet } = useKumasTakipStore()
   const { foyler, isLoaded: isCekmeLoaded, addFoy, updateFoy } = useCekmeStore()
   const [selectedSheet, setSelectedSheet] = React.useState<KumasTakipSheet | null>(null)
+  const [notification, setNotification] = React.useState<{ message: string; show: boolean } | null>(null)
+  const notificationTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+
+  const showNotification = (message: string) => {
+    if (notificationTimeoutRef.current) {
+      clearTimeout(notificationTimeoutRef.current)
+    }
+    setNotification({ message, show: true })
+    notificationTimeoutRef.current = setTimeout(() => {
+      setNotification(null)
+    }, 4000)
+  }
 
   // Yükleme sırasında animasyon göster
   if (!isTakipLoaded || !isCekmeLoaded) {
@@ -127,11 +140,15 @@ export default function KumasTakipFoyuPage() {
       return "Academia & Beymen Collection"
     }
 
-    const existingCekme = foyler.find(f => 
-      f.modelKodu === savedSheet.baglandigiModel &&
-      f.sezon === savedSheet.sezon &&
-      getEtiketGroup(f.etiket) === getEtiketGroup(savedSheet.etiket)
-    )
+    const cleanModel = savedSheet.baglandigiModel?.trim().toLowerCase()
+    const cleanSezon = savedSheet.sezon?.trim().toLowerCase()
+    const targetGroup = getEtiketGroup(savedSheet.etiket)
+
+    const existingCekme = cleanModel ? foyler.find(f => 
+      f.modelKodu?.trim().toLowerCase() === cleanModel &&
+      f.sezon?.trim().toLowerCase() === cleanSezon &&
+      getEtiketGroup(f.etiket) === targetGroup
+    ) : null
 
     if (existingCekme) {
       // Slot-bazlı merge: her kumaş türü kendi sabit sütununa yerleşir
@@ -160,7 +177,7 @@ export default function KumasTakipFoyuPage() {
         return existFab || genFab
       })
 
-      updateFoy(existingCekme.id, {
+      await updateFoy(existingCekme.id, {
         ...existingCekme,
         sezon: savedSheet.sezon,
         etiket: savedSheet.etiket || existingCekme.etiket,
@@ -169,10 +186,12 @@ export default function KumasTakipFoyuPage() {
         kumasKodu: savedSheet.kumasKodu || existingCekme.kumasKodu,
         fabrics: mergedFabrics
       })
+      showNotification("Çekme tablosundaki bilgiler güncellenmiştir.")
     } else {
       // İlk defa oluşturuluyorsa doğrudan ekle
       cekmeRecord.id = Date.now().toString() + Math.random().toString(36).substr(2, 5)
-      addFoy(cekmeRecord)
+      await addFoy(cekmeRecord)
+      showNotification("Çekme tablosuna yeni föy kaydı eklendi.")
     }
   }
 
@@ -182,7 +201,28 @@ export default function KumasTakipFoyuPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Şık Çekme Tablosu Güncellendi Bildirimi (Toast) */}
+      {notification?.show && (
+        <div className="fixed top-6 right-6 z-50 flex items-center gap-3.5 bg-neutral-900/95 text-white backdrop-blur-md px-5 py-3.5 rounded-2xl shadow-2xl border border-neutral-700/80 animate-in slide-in-from-top-3 fade-in duration-300">
+          <div className="h-9 w-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+          </div>
+          <div className="flex flex-col pr-1 text-left">
+            <span className="text-xs font-bold text-neutral-100">Senkronizasyon Başarılı</span>
+            <span className="text-xs text-neutral-300 font-medium">
+              {notification.message}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setNotification(null)}
+            className="text-neutral-400 hover:text-white p-1 rounded-lg transition-colors ml-2 cursor-pointer"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
       {/* Title area */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-neutral-800">Kumaş Takip Föyü</h1>

@@ -28,34 +28,46 @@ export function useCekmeStore() {
     fetchFoyler()
   }, [])
 
-  const addFoy = async (foy: CekmeFoyu) => {
+  const addFoy = async (foy: CekmeFoyu): Promise<boolean> => {
     try {
       const res = await fetch("/api/cekme-tablosu", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(foy),
       })
-      if (!res.ok) throw new Error("Failed to add")
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null)
+        throw new Error(errorData?.error || "Failed to add")
+      }
       await fetchFoyler()
+      return true
     } catch (error) {
       console.error("Add error:", error)
-      alert("Kaydedilirken bir hata oluştu.")
+      alert("Çekme tablosuna kaydedilirken bir hata oluştu.")
+      return false
     }
   }
 
-  const updateFoy = async (id: string, updatedFoy: CekmeFoyu) => {
+  const updateFoy = async (id: string, updatedFoy: CekmeFoyu): Promise<boolean> => {
     try {
       // Optimistic update
       setFoyler(prev => prev.map(f => f.id === id ? updatedFoy : f))
 
-      fetch("/api/cekme-tablosu", {
+      const res = await fetch("/api/cekme-tablosu", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedFoy),
-      }).catch(err => console.error("Arka plan güncelleme hatası:", err))
+      })
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null)
+        throw new Error(errorData?.error || "Failed to update")
+      }
+      await fetchFoyler()
+      return true
     } catch (error) {
       console.error("Update error:", error)
-      alert("Güncellenirken bir hata oluştu.")
+      alert("Çekme tablosu güncellenirken bir hata oluştu.")
+      return false
     }
   }
 

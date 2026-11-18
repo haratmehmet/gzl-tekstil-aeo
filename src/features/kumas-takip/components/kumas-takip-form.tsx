@@ -191,10 +191,12 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
     if (e) e.preventDefault()
     if (!kumasKodu) return
 
-    if (kullanildigiYer === "ANA KUMAŞ" && !bypassDuplicateCheck) {
-      const currentId = id || ""
+    const modelTrimmed = baglandigiModel?.trim().toLowerCase()
+    const currentId = id || initialData?.id || ""
+
+    if (modelTrimmed && kullanildigiYer === "ANA KUMAŞ" && !bypassDuplicateCheck) {
       const isDuplicate = sheets.some(s => 
-        s.baglandigiModel === baglandigiModel && 
+        s.baglandigiModel?.trim().toLowerCase() === modelTrimmed && 
         s.kullanildigiYer === "ANA KUMAŞ" &&
         s.id !== currentId
       )

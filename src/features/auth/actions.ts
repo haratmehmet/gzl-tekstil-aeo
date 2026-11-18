@@ -18,7 +18,20 @@ export async function loginUser(email: string, passwordAttempt: string) {
       return { success: false, error: "Hesabınız pasif durumda. Lütfen yönetici ile iletişime geçin." }
     }
 
-    const isValid = await bcrypt.compare(passwordAttempt, user.password)
+    let isValid = false
+    if (user.password.startsWith("$2a$") || user.password.startsWith("$2b$")) {
+      isValid = await bcrypt.compare(passwordAttempt, user.password)
+    } else {
+      isValid = (passwordAttempt === user.password)
+      if (isValid) {
+        const hashedPassword = await bcrypt.hash(passwordAttempt, 10)
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { password: hashedPassword }
+        })
+      }
+    }
+
     if (!isValid) {
       return { success: false, error: "Geçersiz şifre." }
     }

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Download, Ruler, ChevronDown } from "lucide-react"
+import { Plus, Download, Ruler, ChevronDown, CheckCircle2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useCekmeStore } from "@/features/cekme-tablosu/useCekmeStore"
@@ -17,6 +17,18 @@ export default function CekmeTablosuPage() {
   const [activeFilter, setActiveFilter] = React.useState<string>("Kayıt Yok")
   const [isEditing, setIsEditing] = React.useState(false)
   const [editingFoy, setEditingFoy] = React.useState<CekmeFoyu | null>(null)
+  const [notification, setNotification] = React.useState<{ message: string; show: boolean } | null>(null)
+  const notificationTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+
+  const showNotification = (message: string) => {
+    if (notificationTimeoutRef.current) {
+      clearTimeout(notificationTimeoutRef.current)
+    }
+    setNotification({ message, show: true })
+    notificationTimeoutRef.current = setTimeout(() => {
+      setNotification(null)
+    }, 4000)
+  }
 
   const getEtiketGroup = (etiket?: string) => {
     if (etiket === "Beymen Club") return "Beymen Club"
@@ -97,11 +109,13 @@ export default function CekmeTablosuPage() {
     setIsEditing(true)
   }
 
-  const handleSave = (data: CekmeFoyu) => {
+  const handleSave = async (data: CekmeFoyu) => {
     if (editingFoy) {
-      updateFoy(data.id, data)
+      await updateFoy(data.id, data)
+      showNotification("Çekme tablosundaki bilgiler güncellenmiştir.")
     } else {
-      addFoy(data)
+      await addFoy(data)
+      showNotification("Yeni çekme föyü başarıyla eklendi.")
     }
     setIsEditing(false)
     setEditingFoy(null)
@@ -129,7 +143,28 @@ export default function CekmeTablosuPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Şık Çekme Tablosu Güncellendi Bildirimi (Toast) */}
+      {notification?.show && (
+        <div className="fixed top-6 right-6 z-50 flex items-center gap-3.5 bg-neutral-900/95 text-white backdrop-blur-md px-5 py-3.5 rounded-2xl shadow-2xl border border-neutral-700/80 animate-in slide-in-from-top-3 fade-in duration-300">
+          <div className="h-9 w-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+          </div>
+          <div className="flex flex-col pr-1 text-left">
+            <span className="text-xs font-bold text-neutral-100">İşlem Başarılı</span>
+            <span className="text-xs text-neutral-300 font-medium">
+              {notification.message}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setNotification(null)}
+            className="text-neutral-400 hover:text-white p-1 rounded-lg transition-colors ml-2 cursor-pointer"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
