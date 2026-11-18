@@ -228,6 +228,7 @@ export function CekmeForm({ initialData, activeSezon, onSave, onCancel }: CekmeF
               <option value="Academia">Academia</option>
               <option value="Beymen Collection">Beymen Collection</option>
               <option value="Beymen Club">Beymen Club</option>
+              <option value="Academia Erkek">Academia Erkek</option>
             </select>
           </div>
           <div className="space-y-2">

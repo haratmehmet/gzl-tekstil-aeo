@@ -27,7 +27,7 @@ export interface KumasTakipSheet {
   sezon: string
   sapKodu?: string
   baglandigiModel: string
-  etiket?: "Academia" | "Beymen Collection" | "Beymen Club" | ""
+  etiket?: "Academia" | "Beymen Collection" | "Beymen Club" | "Academia Erkek" | ""
   kullanildigiYer: "ANA KUMAŞ" | "ASTAR" | "GARNİ" | ""
   birim: "MT" | "KG"
   topAdedi: number
@@ -64,7 +64,7 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
   const [sezon, setSezon] = React.useState("")
   const [sapKodu, setSapKodu] = React.useState("")
   const [baglandigiModel, setBaglandigiModel] = React.useState("")
-  const [etiket, setEtiket] = React.useState<"Academia" | "Beymen Collection" | "Beymen Club" | "">("")
+  const [etiket, setEtiket] = React.useState<"Academia" | "Beymen Collection" | "Beymen Club" | "Academia Erkek" | "">("")
   const [kullanildigiYer, setKullanildigiYer] = React.useState<"ANA KUMAŞ" | "ASTAR" | "GARNİ" | "">("")
   const [birim, setBirim] = React.useState<"MT" | "KG">("MT")
   const [topAdedi, setTopAdedi] = React.useState<number>(0)
@@ -1121,6 +1121,7 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
                     <option value="Academia">Academia</option>
                     <option value="Beymen Collection">Beymen Collection</option>
                     <option value="Beymen Club">Beymen Club</option>
+                    <option value="Academia Erkek">Academia Erkek</option>
                   </select>
                 </div>
               </div>
@@ -1238,6 +1239,7 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
                     <option value="Academia">Academia</option>
                     <option value="Beymen Collection">Beymen Collection</option>
                     <option value="Beymen Club">Beymen Club</option>
+                    <option value="Academia Erkek">Academia Erkek</option>
                   </select>
                 </div>
               </div>

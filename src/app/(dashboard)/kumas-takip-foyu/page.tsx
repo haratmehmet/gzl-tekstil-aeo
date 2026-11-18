@@ -130,6 +130,7 @@ export default function KumasTakipFoyuPage() {
 
     const getEtiketGroup = (etiket?: string) => {
       if (etiket === "Beymen Club") return "Beymen Club"
+      if (etiket === "Academia Erkek") return "Academia Erkek"
       return "Academia & Beymen Collection"
     }
 
