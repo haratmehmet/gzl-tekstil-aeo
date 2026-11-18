@@ -43,14 +43,16 @@ interface KumasTakipFormProps {
   initialData?: KumasTakipSheet | null
   onSave: (sheet: KumasTakipSheet) => void
   onNew: () => void
+  sheets?: KumasTakipSheet[]
 }
 
 // Module-level font cache for instant subsequent PDF generations
 let cachedFontRegular: string | null = null
 let cachedFontBold: string | null = null
 
-export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormProps) {
-  const { sheets } = useKumasTakipStore()
+export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheets }: KumasTakipFormProps) {
+  const { sheets: storeSheets } = useKumasTakipStore()
+  const sheets = passedSheets || storeSheets
   // Form states initialized with initialData or defaults
   const [id, setId] = React.useState("")
   const [kumasKodu, setKumasKodu] = React.useState("")
@@ -194,11 +196,30 @@ export function KumasTakipForm({ initialData, onSave, onNew }: KumasTakipFormPro
     const modelTrimmed = baglandigiModel?.trim().toLowerCase()
     const currentId = id || initialData?.id || ""
 
-    if (modelTrimmed && kullanildigiYer === "ANA KUMAŞ" && !bypassDuplicateCheck) {
+    // 1. Veritabanındaki veya listedeki mevcut kaydı bul
+    const existingRecord = currentId ? sheets.find(s => s.id === currentId) : null
+
+    // 2. Bu kayıt zaten bu model için ANA KUMAŞ olarak mı kayıtlıydı?
+    // Eğer kullanıcı mevcut bir ANA KUMAŞ föyünü güncelliyorsa (metraj, top, çekme, not vb.),
+    // tekrar tekrar mükerrer uyarısı VERME.
+    const wasAlreadyAnaKumasForThisModel = Boolean(
+      (existingRecord &&
+        existingRecord.baglandigiModel?.trim().toLowerCase() === modelTrimmed &&
+        existingRecord.kullanildigiYer === "ANA KUMAŞ") ||
+      (initialData?.id &&
+        initialData.id === currentId &&
+        initialData.baglandigiModel?.trim().toLowerCase() === modelTrimmed &&
+        initialData.kullanildigiYer === "ANA KUMAŞ")
+    )
+
+    // 3. Yalnızca yeni bir ANA KUMAŞ eklenirken ya da kayıt farklı bir modele/ana kumaşa dönüştürülürken mükerrer uyarısı ver
+    if (modelTrimmed && kullanildigiYer === "ANA KUMAŞ" && !bypassDuplicateCheck && !wasAlreadyAnaKumasForThisModel) {
+      const currentSezon = sezon?.trim().toLowerCase()
       const isDuplicate = sheets.some(s => 
+        s.id !== currentId &&
         s.baglandigiModel?.trim().toLowerCase() === modelTrimmed && 
         s.kullanildigiYer === "ANA KUMAŞ" &&
-        s.id !== currentId
+        (currentSezon && s.sezon ? s.sezon.trim().toLowerCase() === currentSezon : true)
       )
       
       if (isDuplicate) {

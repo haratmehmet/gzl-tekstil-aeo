@@ -238,6 +238,7 @@ export default function KumasTakipFoyuPage() {
             initialData={selectedSheet}
             onSave={handleSaveSheet}
             onNew={handleNewSheet}
+            sheets={sheets}
           />
         </div>
         <div className="lg:col-span-1">
