@@ -9,12 +9,12 @@ export function GenelUretimLayout() {
   const [sezonlar, setSezonlar] = React.useState<any[]>([])
   const [activeSezonId, setActiveSezonId] = React.useState<string | null>(null)
   const [newSezonName, setNewSezonName] = React.useState("")
-  const [activeTab, setActiveTab] = React.useState<"academia" | "beymen">("academia")
+  const [activeTab, setActiveTab] = React.useState<"academia" | "beymen" | "academia_erkek">("academia")
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(true)
 
   React.useEffect(() => {
-    const savedTab = localStorage.getItem("genelUretimTab") as "academia" | "beymen"
+    const savedTab = localStorage.getItem("genelUretimTab") as "academia" | "beymen" | "academia_erkek"
     if (savedTab) setActiveTab(savedTab)
     loadSezonlar()
   }, [])
@@ -156,6 +156,16 @@ export function GenelUretimLayout() {
             }`}
           >
             Beymen Club
+          </button>
+          <button
+            onClick={() => setActiveTab("academia_erkek")}
+            className={`allow-viewer flex-1 flex items-center justify-center py-3 text-[11px] font-black uppercase tracking-wider transition-all border-l border-neutral-200 ${
+              activeTab === "academia_erkek" 
+                ? "bg-white text-neutral-900 shadow-[inset_0_-2px_0_0_#171717]" 
+                : "text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100/50"
+            }`}
+          >
+            Academia Erkek
           </button>
         </div>
       </div>

@@ -7,7 +7,7 @@ import { getGenelUretimKayitlar, addGenelUretimKayit, updateGenelUretimKayit, de
 
 interface GenelUretimTableProps {
   sezonId: string
-  markaTipi: "academia" | "beymen"
+  markaTipi: "academia" | "beymen" | "academia_erkek"
   sezonAd: string
 }
 
@@ -203,7 +203,8 @@ export function GenelUretimTable({ sezonId, markaTipi, sezonAd }: GenelUretimTab
     const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
     const link = document.createElement("a")
     link.href = URL.createObjectURL(blob)
-    link.download = `Genel_Uretim_${sezonAd}_${markaTipi}_${new Date().toLocaleDateString("tr-TR")}.xlsx`
+    const markaLabel = markaTipi === "academia" ? "Academia" : markaTipi === "beymen" ? "Beymen_Club" : "Academia_Erkek"
+    link.download = `Genel_Uretim_${sezonAd}_${markaLabel}_${new Date().toLocaleDateString("tr-TR")}.xlsx`
     link.click()
   }
 
@@ -216,7 +217,7 @@ export function GenelUretimTable({ sezonId, markaTipi, sezonAd }: GenelUretimTab
       {/* TOOLBAR */}
       <div className="p-3 bg-neutral-50 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-b border-neutral-200 print:hidden">
         <div className="text-xs font-black text-sky-950 uppercase tracking-widest text-center md:text-left w-full md:w-auto">
-          {sezonAd} - {markaTipi === "academia" ? "ACADEMIA / BEYMEN COLLECTION" : "BEYMEN CLUB"}
+          {sezonAd} - {markaTipi === "academia" ? "ACADEMIA / BEYMEN COLLECTION" : markaTipi === "beymen" ? "BEYMEN CLUB" : "ACADEMIA ERKEK"}
         </div>
         <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 w-full md:w-auto">
           <button onClick={handleExportExcel} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-500 transition-colors">
