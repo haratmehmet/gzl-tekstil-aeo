@@ -76,9 +76,10 @@ export default function KumasTakipFoyuPage() {
     const savePromise = saveSheet(savedSheet)
 
     // 2. Çekme Tablosu senkronizasyonunu hazırla
-    const emptyFabric = { id: "", kullanildigiYer: "", kumasIcerik: "", tedarikci: "", artikelAdi: "", urunDptRenk: "", gelenMetraj: "", kumasEn: "", enCekmeYuzde: "", boyCekmeYuzde: "" }
+    const emptyFabric = { id: "", kullanildigiYer: "", kumasKodu: "", kumasIcerik: "", tedarikci: "", artikelAdi: "", urunDptRenk: "", gelenMetraj: "", kumasEn: "", enCekmeYuzde: "", boyCekmeYuzde: "" }
     
     const baseFabricData = {
+      kumasKodu: savedSheet.kumasKodu || "",
       kumasIcerik: savedSheet.kumasIcerik || "",
       tedarikci: savedSheet.kumasciFirma || "",
       urunDptRenk: savedSheet.kumasRenk || "",
@@ -106,7 +107,8 @@ export default function KumasTakipFoyuPage() {
           ...emptyFabric, 
           ...baseFabricData, 
           id: (t + i).toString(), 
-          kullanildigiYer: savedSheet.kullanildigiYer || "ANA KUMAŞ" 
+          kullanildigiYer: savedSheet.kullanildigiYer || "ANA KUMAŞ",
+          kumasKodu: savedSheet.kumasKodu || ""
         }
       }
       return { ...emptyFabric, id: (t + i).toString() }
@@ -143,18 +145,37 @@ export default function KumasTakipFoyuPage() {
 
     let cekmePromise: Promise<boolean>
     if (existingCekme) {
-      // Slot-bazlı merge: her kumaş türü kendi sabit sütununa yerleşir
+      // Slot rolüne göre mevcut kumaşı doğru eşle
+      const findExistingFabricForSlot = (idx: number) => {
+        const slotRole = idx === 0 ? "ANA KUMAŞ" : idx === 1 ? "ASTAR" : "GARNİ"
+        // 1. Önce rol adına göre ara
+        const byRole = existingCekme.fabrics?.find(f => f.kullanildigiYer?.trim().toUpperCase() === slotRole)
+        if (byRole) return byRole
+        // 2. Yoksa index'e bak (eğer index'teki fabric başka bir slotun rolünü taşımıyorsa)
+        const atIdx = existingCekme.fabrics?.[idx]
+        if (atIdx) {
+          const atIdxRole = atIdx.kullanildigiYer?.trim().toUpperCase()
+          const isOtherRole = (idx !== 0 && atIdxRole === "ANA KUMAŞ") || 
+                              (idx !== 1 && atIdxRole === "ASTAR") || 
+                              (idx !== 2 && atIdxRole === "GARNİ")
+          if (!isOtherRole) return atIdx
+        }
+        return undefined
+      }
+
+      // Slot-bazlı merge: her kumaş türü (ANA KUMAŞ, ASTAR, GARNİ) kendi sabit slotuna yerleşir
       const mergedFabrics = [0, 1, 2].map((i) => {
-        const existFab = existingCekme.fabrics?.[i]
+        const existFab = findExistingFabricForSlot(i)
         const genFab = generatedFabrics[i]
         
         // Bu slot, yeni eklenen kumaşın slotu mu?
         if (i === slotIndex) {
-          // Evet — yeni veriyle güncelle (mevcut veriyi koru, üstüne yaz)
+          // Evet — yeni veriyle güncelle
           return {
             ...(existFab || emptyFabric),
             id: genFab.id,
             kullanildigiYer: genFab.kullanildigiYer,
+            kumasKodu: savedSheet.kumasKodu || genFab.kumasKodu || "",
             kumasIcerik: genFab.kumasIcerik,
             tedarikci: genFab.tedarikci,
             urunDptRenk: genFab.urunDptRenk,
@@ -165,9 +186,18 @@ export default function KumasTakipFoyuPage() {
           }
         }
         
-        // Bu slot başka bir kumaş türüne ait — mevcut veriyi koru
-        return existFab || genFab
+        // Bu slot başka bir kumaş türüne ait — mevcut veriyi ve kumaş kodunu kesinlikle koru
+        if (existFab) {
+          return {
+            ...existFab,
+            kumasKodu: existFab.kumasKodu || (i === 0 ? existingCekme.kumasKodu : "") || ""
+          }
+        }
+        return genFab
       })
+
+      // Ana föy seviyesindeki kumasKodu her zaman 1. slotun (ANA KUMAŞ) kodunu taşımalı
+      const anaKumasKodu = (slotIndex === 0 ? savedSheet.kumasKodu : (mergedFabrics[0]?.kumasKodu || existingCekme.kumasKodu)) || savedSheet.kumasKodu || ""
 
       cekmePromise = updateFoy(existingCekme.id, {
         ...existingCekme,
@@ -175,7 +205,7 @@ export default function KumasTakipFoyuPage() {
         etiket: savedSheet.etiket || existingCekme.etiket,
         modelKodu: savedSheet.baglandigiModel || existingCekme.modelKodu,
         sapKodu: savedSheet.sapKodu || existingCekme.sapKodu,
-        kumasKodu: savedSheet.kumasKodu || existingCekme.kumasKodu,
+        kumasKodu: anaKumasKodu,
         fabrics: mergedFabrics
       })
     } else {

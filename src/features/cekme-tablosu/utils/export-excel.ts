@@ -14,13 +14,13 @@ export const exportToExcel = async (foyler: CekmeFoyu[], sezon: string) => {
 
   // Sütun başlıkları
   const headers = [
-    "TESTE GÖNDERİLME TARİHİ", "MODELİST", "ETİKET", "MODEL KODU", "SAP KODU", "KUMAŞ KODU",
+    "TESTE GÖNDERİLME TARİHİ", "MODELİST", "ETİKET", "MODEL KODU", "SAP KODU",
     // 1. Kumaş
-    "KULLANILDIĞI YER", "KUMAŞ İÇERİK", "TEDARİKÇİ", "ARTİKEL ADI", "ÜRÜN DPT RENK", "GELEN METRAJ", "KUMAŞ EN", "EN ÇEKME %DİR", "BOY ÇEKME %DİR",
+    "KUMAŞ KODU", "KULLANILDIĞI YER", "KUMAŞ İÇERİK", "TEDARİKÇİ", "ARTİKEL ADI", "ÜRÜN DPT RENK", "GELEN METRAJ", "KUMAŞ EN", "EN ÇEKME %DİR", "BOY ÇEKME %DİR",
     // 2. Kumaş
-    "KULLANILDIĞI YER", "KUMAŞ İÇERİK", "TEDARİKÇİ", "ARTİKEL ADI", "ÜRÜN DPT RENK", "GELEN METRAJ", "KUMAŞ EN", "EN ÇEKME %DİR", "BOY ÇEKME %DİR",
+    "KUMAŞ KODU", "KULLANILDIĞI YER", "KUMAŞ İÇERİK", "TEDARİKÇİ", "ARTİKEL ADI", "ÜRÜN DPT RENK", "GELEN METRAJ", "KUMAŞ EN", "EN ÇEKME %DİR", "BOY ÇEKME %DİR",
     // 3. Kumaş
-    "KULLANILDIĞI YER", "KUMAŞ İÇERİK", "TEDARİKÇİ", "ARTİKEL ADI", "ÜRÜN DPT RENK", "GELEN METRAJ", "KUMAŞ EN", "EN ÇEKME %DİR", "BOY ÇEKME %DİR",
+    "KUMAŞ KODU", "KULLANILDIĞI YER", "KUMAŞ İÇERİK", "TEDARİKÇİ", "ARTİKEL ADI", "ÜRÜN DPT RENK", "GELEN METRAJ", "KUMAŞ EN", "EN ÇEKME %DİR", "BOY ÇEKME %DİR",
   ]
 
   // Başlık satırını ekle
@@ -36,10 +36,15 @@ export const exportToExcel = async (foyler: CekmeFoyu[], sezon: string) => {
     }
 
     let bgColor = bgGray
-    if (colNumber === 6) bgColor = bgBlue // KUMAŞ KODU
-    else if (colNumber >= 7 && colNumber <= 15) bgColor = bgPink // 1. Kumaş
-    else if (colNumber >= 16 && colNumber <= 24) bgColor = bgPeach // 2. Kumaş
-    else if (colNumber >= 25 && colNumber <= 33) bgColor = bgGreen // 3. Kumaş
+    if (colNumber <= 5) {
+      bgColor = bgGray
+    } else if (colNumber >= 6 && colNumber <= 15) {
+      bgColor = colNumber === 6 ? bgBlue : bgPink // 1. Kumaş
+    } else if (colNumber >= 16 && colNumber <= 25) {
+      bgColor = colNumber === 16 ? bgBlue : bgPeach // 2. Kumaş
+    } else if (colNumber >= 26 && colNumber <= 35) {
+      bgColor = colNumber === 26 ? bgBlue : bgGreen // 3. Kumaş
+    }
 
     cell.fill = {
       type: "pattern",
@@ -51,7 +56,7 @@ export const exportToExcel = async (foyler: CekmeFoyu[], sezon: string) => {
   // Sütun genişliklerini ayarla
   sheet.columns.forEach((column, index) => {
     if (index === 0) column.width = 15 // Tarih
-    else if (index >= 1 && index <= 5) column.width = 12
+    else if (index >= 1 && index <= 4) column.width = 12
     else column.width = 15 // Kumaş detayları
   })
 
@@ -62,15 +67,18 @@ export const exportToExcel = async (foyler: CekmeFoyu[], sezon: string) => {
       foy.modelist || "-",
       foy.etiket || "-",
       foy.modelKodu || "-",
-      foy.sapKodu || "-",
-      foy.kumasKodu || "-"
+      foy.sapKodu || "-"
     ]
 
     // Maksimum 3 kumaş
+    const slotRoles = ["ANA KUMAŞ", "ASTAR", "GARNİ"]
     for (let i = 0; i < 3; i++) {
-      const fab = foy.fabrics?.[i]
-      if (fab) {
+      const targetRole = slotRoles[i]
+      const fab = foy.fabrics?.find(f => f.kullanildigiYer?.trim().toUpperCase() === targetRole) || foy.fabrics?.[i]
+      if (fab && (fab.kullanildigiYer || fab.kumasKodu || fab.kumasIcerik)) {
+        const fabricCode = fab.kumasKodu || (i === 0 ? foy.kumasKodu : "") || "-"
         rowValues.push(
+          fabricCode,
           fab.kullanildigiYer || "-",
           fab.kumasIcerik || "-",
           fab.tedarikci || "-",
@@ -82,8 +90,8 @@ export const exportToExcel = async (foyler: CekmeFoyu[], sezon: string) => {
           fab.boyCekmeYuzde || "-"
         )
       } else {
-        // Kumaş yoksa tire ile doldur
-        rowValues.push("-", "-", "-", "-", "-", "-", "-", "-", "-")
+        // Kumaş yoksa tire ile doldur (10 sütun)
+        rowValues.push("-", "-", "-", "-", "-", "-", "-", "-", "-", "-")
       }
     }
 

@@ -24,7 +24,7 @@ export function useKumasTakipStore() {
 
   const saveSheet = async (sheet: KumasTakipSheet): Promise<KumasTakipSheet | null> => {
     try {
-      const exists = sheets.some((s) => s.id === sheet.id)
+      const exists = Boolean(sheet.id && (sheets.some((s) => s.id === sheet.id) || sheet.id.length > 20))
       
       const res = await fetch("/api/kumas-takip", {
         method: exists ? "PUT" : "POST",

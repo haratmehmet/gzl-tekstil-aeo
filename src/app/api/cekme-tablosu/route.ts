@@ -12,7 +12,16 @@ export async function GET() {
         createdAt: "asc",
       },
     })
-    return NextResponse.json(records)
+    const roleOrder: Record<string, number> = { "ANA KUMAŞ": 0, "ASTAR": 1, "GARNİ": 2 }
+    const normalized = records.map(r => ({
+      ...r,
+      fabrics: [...r.fabrics].sort((a, b) => {
+        const orderA = roleOrder[a.kullanildigiYer?.trim().toUpperCase()] ?? 3
+        const orderB = roleOrder[b.kullanildigiYer?.trim().toUpperCase()] ?? 3
+        return orderA - orderB
+      })
+    }))
+    return NextResponse.json(normalized)
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
@@ -30,6 +39,7 @@ export async function POST(request: Request) {
         fabrics: {
           create: fabrics?.map((f: any) => ({
             kullanildigiYer: f.kullanildigiYer || "",
+            kumasKodu: f.kumasKodu || "",
             kumasIcerik: f.kumasIcerik || "",
             tedarikci: f.tedarikci || "",
             artikelAdi: f.artikelAdi || "",
@@ -63,31 +73,34 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "ID is required for update" }, { status: 400 })
     }
 
-    await prisma.cekmeFabric.deleteMany({
-      where: { cekmeFoyuId: id },
-    })
+    const updatedRecord = await prisma.$transaction(async (tx) => {
+      await tx.cekmeFabric.deleteMany({
+        where: { cekmeFoyuId: id },
+      })
 
-    const updatedRecord = await prisma.cekmeFoyu.update({
-      where: { id },
-      data: {
-        ...data,
-        fabrics: {
-          create: fabrics?.map((f: any) => ({
-            kullanildigiYer: f.kullanildigiYer || "",
-            kumasIcerik: f.kumasIcerik || "",
-            tedarikci: f.tedarikci || "",
-            artikelAdi: f.artikelAdi || "",
-            urunDptRenk: f.urunDptRenk || "",
-            gelenMetraj: String(f.gelenMetraj || ""),
-            kumasEn: String(f.kumasEn || ""),
-            enCekmeYuzde: String(f.enCekmeYuzde || ""),
-            boyCekmeYuzde: String(f.boyCekmeYuzde || ""),
-          })) || [],
+      return await tx.cekmeFoyu.update({
+        where: { id },
+        data: {
+          ...data,
+          fabrics: {
+            create: fabrics?.map((f: any) => ({
+              kullanildigiYer: f.kullanildigiYer || "",
+              kumasKodu: f.kumasKodu || "",
+              kumasIcerik: f.kumasIcerik || "",
+              tedarikci: f.tedarikci || "",
+              artikelAdi: f.artikelAdi || "",
+              urunDptRenk: f.urunDptRenk || "",
+              gelenMetraj: String(f.gelenMetraj || ""),
+              kumasEn: String(f.kumasEn || ""),
+              enCekmeYuzde: String(f.enCekmeYuzde || ""),
+              boyCekmeYuzde: String(f.boyCekmeYuzde || ""),
+            })) || [],
+          },
         },
-      },
-      include: {
-        fabrics: true,
-      },
+        include: {
+          fabrics: true,
+        },
+      })
     })
 
     return NextResponse.json(updatedRecord)

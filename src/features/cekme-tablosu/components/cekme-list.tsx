@@ -25,6 +25,32 @@ export function CekmeList({ foyler, onEdit, onDelete, onColorChange }: CekmeList
   const thStyle = "px-2 py-3 border border-neutral-300 text-[10px] font-bold text-center uppercase whitespace-nowrap"
   const getTdStyle = (isRed: boolean) => `px-2 py-2 border border-neutral-300 text-[11px] text-center whitespace-nowrap cursor-pointer transition-colors ${isRed ? 'bg-red-100 hover:bg-red-200 text-red-900 font-medium' : 'bg-white hover:bg-neutral-50'}`
 
+  // Kumaşı doğru slota yerleştiren yardımcı fonksiyon (veritabanı sırasından bağımsız olarak her rol doğru sütunda görünür)
+  const getFabricForSlot = (fabrics: CekmeFoyu["fabrics"], slotIdx: number) => {
+    if (!fabrics || fabrics.length === 0) return undefined
+    const slotRoles = ["ANA KUMAŞ", "ASTAR", "GARNİ"]
+    const targetRole = slotRoles[slotIdx]
+
+    // 1. Önce tam eşleşen role göre ara
+    const byRole = fabrics.find(f => f.kullanildigiYer?.trim().toUpperCase() === targetRole)
+    if (byRole) return byRole
+
+    // 2. Rol tam eşleşmediyse o index'teki kumaşı kontrol et
+    const atIdx = fabrics[slotIdx]
+    if (atIdx) {
+      const atIdxRole = atIdx.kullanildigiYer?.trim().toUpperCase()
+      const isOtherTargetRole = slotRoles.includes(atIdxRole) && atIdxRole !== targetRole
+      if (!isOtherTargetRole) return atIdx
+    }
+
+    // 3. Özel isimli kumaş varsa 3. slota yerleştir
+    if (slotIdx === 2) {
+      return fabrics.find(f => f.kullanildigiYer && !slotRoles.includes(f.kullanildigiYer.trim().toUpperCase()))
+    }
+
+    return undefined
+  }
+
   // Background colors corresponding to the Excel visual
   const bgGray = "bg-[#d9d9d9]"
   const bgBlue = "bg-[#9bc2e6]"
@@ -43,11 +69,11 @@ export function CekmeList({ foyler, onEdit, onDelete, onColorChange }: CekmeList
               <th className={`${thStyle} ${bgGray}`}>ETİKET</th>
               <th className={`${thStyle} ${bgGray}`}>MODEL KODU</th>
               <th className={`${thStyle} ${bgGray}`}>SAP KODU</th>
-              <th className={`${thStyle} ${bgBlue}`}>KUMAŞ KODU</th>
 
               {/* Loop for 3 potential fabrics just to draw headers */}
               {[0, 1, 2].map((i) => (
                 <React.Fragment key={`th-fab-${i}`}>
+                  <th className={`${thStyle} ${bgBlue} font-black`}>KUMAŞ<br/>KODU</th>
                   <th className={`${thStyle} ${fabricColors[i % 3]}`}>KULLANILDIĞI<br/>YER</th>
                   <th className={`${thStyle} ${fabricColors[i % 3]}`}>KUMAŞ İÇERİK</th>
                   <th className={`${thStyle} ${fabricColors[i % 3]}`}>TEDARİKÇİ</th>
@@ -73,13 +99,14 @@ export function CekmeList({ foyler, onEdit, onDelete, onColorChange }: CekmeList
                   <td className={tdStyle}>{foy.etiket}</td>
                   <td className={tdStyle}>{foy.modelKodu}</td>
                   <td className={tdStyle}>{foy.sapKodu}</td>
-                  <td className={tdStyle}>{foy.kumasKodu}</td>
                   
                   {[0, 1, 2].map((i) => {
-                    const fab = foy.fabrics[i]
-                    if (fab) {
+                    const fab = getFabricForSlot(foy.fabrics, i)
+                    if (fab && (fab.kullanildigiYer || fab.kumasKodu || fab.kumasIcerik)) {
+                      const fabricCode = fab.kumasKodu || (i === 0 ? foy.kumasKodu : "") || "-";
                       return (
                         <React.Fragment key={`td-fab-${foy.id}-${i}`}>
+                          <td className={`${tdStyle} font-bold text-sky-800 bg-sky-50/50`}>{fabricCode}</td>
                           <td className={tdStyle}>{fab.kullanildigiYer}</td>
                           <td className={tdStyle}>{fab.kumasIcerik}</td>
                           <td className={tdStyle}>{fab.tedarikci}</td>
@@ -98,7 +125,7 @@ export function CekmeList({ foyler, onEdit, onDelete, onColorChange }: CekmeList
                           <td className={tdStyle}></td><td className={tdStyle}></td>
                           <td className={tdStyle}></td><td className={tdStyle}></td>
                           <td className={tdStyle}></td><td className={tdStyle}></td>
-                          <td className={tdStyle}></td>
+                          <td className={tdStyle}></td><td className={tdStyle}></td>
                         </React.Fragment>
                       )
                     }
@@ -155,11 +182,7 @@ export function CekmeList({ foyler, onEdit, onDelete, onColorChange }: CekmeList
               </div>
               
               {/* Orta Kısım: Diğer Temel Alanlar */}
-              <div className="p-3 grid grid-cols-2 gap-3 border-b border-neutral-100">
-                <div>
-                  <div className="text-[10px] font-bold text-neutral-400 uppercase mb-0.5">Kumaş Kodu</div>
-                  <div className="text-xs font-semibold text-sky-700 bg-sky-50 px-2 py-1 rounded w-max">{foy.kumasKodu || "-"}</div>
-                </div>
+              <div className="p-3 grid grid-cols-3 gap-2 border-b border-neutral-100">
                 <div>
                   <div className="text-[10px] font-bold text-neutral-400 uppercase mb-0.5">Test Tarihi</div>
                   <div className="text-xs font-medium text-neutral-700">{foy.testeGonderilmeTarihi ? new Date(foy.testeGonderilmeTarihi).toLocaleDateString("tr-TR") : "-"}</div>
@@ -172,7 +195,7 @@ export function CekmeList({ foyler, onEdit, onDelete, onColorChange }: CekmeList
                   <div className="text-[10px] font-bold text-neutral-400 uppercase mb-0.5">Etiket</div>
                   <div className="text-xs font-medium text-neutral-700">{foy.etiket || "-"}</div>
                 </div>
-                <div className="col-span-2 mt-2 pt-2 border-t border-neutral-100 flex justify-end gap-2">
+                <div className="col-span-3 mt-1 pt-1 border-t border-neutral-100 flex justify-end gap-2">
                   <button 
                     onClick={(e) => {
                       e.stopPropagation()
@@ -199,34 +222,42 @@ export function CekmeList({ foyler, onEdit, onDelete, onColorChange }: CekmeList
                 <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-2 border-b border-neutral-100 pb-1">Kumaş Detayları</div>
                 {foy.fabrics.length === 0 && <div className="text-xs text-neutral-500 italic">Kumaş bilgisi yok.</div>}
                 
-                {foy.fabrics.map((fab, i) => (
-                  <div key={i} className="bg-neutral-50 rounded-lg p-2 border border-neutral-100">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-black text-neutral-500 uppercase">Kumaş {i + 1}</span>
-                      <span className="text-[10px] font-bold text-neutral-700 bg-white px-2 py-0.5 rounded border border-neutral-200">{fab.kullanildigiYer || "-"}</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
-                      <div className="flex justify-between items-center bg-white px-1.5 py-1 rounded text-[10px]">
-                        <span className="text-neutral-400 font-bold">İçerik:</span>
-                        <span className="text-neutral-800 font-semibold">{fab.kumasIcerik || "-"}</span>
-                      </div>
-                      <div className="flex justify-between items-center bg-white px-1.5 py-1 rounded text-[10px]">
-                        <span className="text-neutral-400 font-bold">Ted.:</span>
-                        <span className="text-neutral-800 font-semibold truncate max-w-[80px]" title={fab.tedarikci}>{fab.tedarikci || "-"}</span>
-                      </div>
-                      <div className="col-span-2 grid grid-cols-2 gap-2 mt-1">
-                        <div className="bg-orange-50 border border-orange-100 p-1.5 rounded-lg text-center">
-                          <div className="text-[9px] font-bold text-orange-600 mb-0.5">EN ÇEKME</div>
-                          <div className="text-xs font-black text-orange-900">{fab.enCekmeYuzde ? `%${fab.enCekmeYuzde}` : "-"}</div>
-                        </div>
-                        <div className="bg-fuchsia-50 border border-fuchsia-100 p-1.5 rounded-lg text-center">
-                          <div className="text-[9px] font-bold text-fuchsia-600 mb-0.5">BOY ÇEKME</div>
-                          <div className="text-xs font-black text-fuchsia-900">{fab.boyCekmeYuzde ? `%${fab.boyCekmeYuzde}` : "-"}</div>
+                {foy.fabrics.map((fab, i) => {
+                  const fabricCode = fab.kumasKodu || (i === 0 ? foy.kumasKodu : "") || "-";
+                  return (
+                    <div key={i} className="bg-neutral-50 rounded-lg p-2 border border-neutral-100">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-black text-neutral-500 uppercase">Kumaş {i + 1}</span>
+                          <span className="text-[10px] font-black text-sky-800 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded font-mono">
+                            {fabricCode}
+                          </span>
+                          <span className="text-[10px] font-bold text-neutral-700 bg-white px-2 py-0.5 rounded border border-neutral-200">{fab.kullanildigiYer || "-"}</span>
                         </div>
                       </div>
+                      <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
+                        <div className="flex justify-between items-center bg-white px-1.5 py-1 rounded text-[10px]">
+                          <span className="text-neutral-400 font-bold">İçerik:</span>
+                          <span className="text-neutral-800 font-semibold">{fab.kumasIcerik || "-"}</span>
+                        </div>
+                        <div className="flex justify-between items-center bg-white px-1.5 py-1 rounded text-[10px]">
+                          <span className="text-neutral-400 font-bold">Ted.:</span>
+                          <span className="text-neutral-800 font-semibold truncate max-w-[80px]" title={fab.tedarikci}>{fab.tedarikci || "-"}</span>
+                        </div>
+                        <div className="col-span-2 grid grid-cols-2 gap-2 mt-1">
+                          <div className="bg-orange-50 border border-orange-100 p-1.5 rounded-lg text-center">
+                            <div className="text-[9px] font-bold text-orange-600 mb-0.5">EN ÇEKME</div>
+                            <div className="text-xs font-black text-orange-900">{fab.enCekmeYuzde ? `%${fab.enCekmeYuzde}` : "-"}</div>
+                          </div>
+                          <div className="bg-fuchsia-50 border border-fuchsia-100 p-1.5 rounded-lg text-center">
+                            <div className="text-[9px] font-bold text-fuchsia-600 mb-0.5">BOY ÇEKME</div>
+                            <div className="text-xs font-black text-fuchsia-900">{fab.boyCekmeYuzde ? `%${fab.boyCekmeYuzde}` : "-"}</div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
             );

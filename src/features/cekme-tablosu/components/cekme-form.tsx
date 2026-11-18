@@ -19,6 +19,7 @@ interface CekmeFormProps {
 const emptyFabric: CekmeKumasDetay = {
   id: "",
   kullanildigiYer: "",
+  kumasKodu: "",
   kumasIcerik: "",
   tedarikci: "",
   artikelAdi: "",
@@ -60,6 +61,7 @@ export function CekmeForm({ initialData, activeSezon, onSave, onCancel }: CekmeF
         {
           id: Date.now().toString(),
           kullanildigiYer: sheet.kullanildigiYer || "",
+          kumasKodu: sheet.kumasKodu || "",
           kumasIcerik: sheet.kumasIcerik || "",
           tedarikci: sheet.kumasciFirma || "",
           artikelAdi: prev.fabrics?.[0]?.artikelAdi || "", // preserve if already filled
@@ -101,24 +103,35 @@ export function CekmeForm({ initialData, activeSezon, onSave, onCancel }: CekmeF
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const isSubmittingRef = React.useRef(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSubmittingRef.current) return
+    isSubmittingRef.current = true
+    setIsSubmitting(true)
     
-    const finalData: CekmeFoyu = {
-      id: formData.id || Date.now().toString(),
-      sezon: formData.sezon || activeSezon,
-      testeGonderilmeTarihi: formData.testeGonderilmeTarihi || "",
-      modelist: formData.modelist || "",
-      etiket: formData.etiket || "",
-      modelKodu: formData.modelKodu || "",
-      sapKodu: formData.sapKodu || "",
-      kumasKodu: formData.kumasKodu || "",
-      fabrics: formData.fabrics || [],
-      createdAt: formData.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+    try {
+      const finalData: CekmeFoyu = {
+        id: formData.id || Date.now().toString(),
+        sezon: formData.sezon || activeSezon,
+        testeGonderilmeTarihi: formData.testeGonderilmeTarihi || "",
+        modelist: formData.modelist || "",
+        etiket: formData.etiket || "",
+        modelKodu: formData.modelKodu || "",
+        sapKodu: formData.sapKodu || "",
+        kumasKodu: formData.fabrics?.[0]?.kumasKodu || formData.kumasKodu || "",
+        fabrics: formData.fabrics || [],
+        createdAt: formData.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+      
+      await onSave(finalData)
+    } finally {
+      isSubmittingRef.current = false
+      setIsSubmitting(false)
     }
-    
-    onSave(finalData)
   }
 
   const fabricColors = [
@@ -141,9 +154,17 @@ export function CekmeForm({ initialData, activeSezon, onSave, onCancel }: CekmeF
             <p className="text-xs text-neutral-500">Sezon: {activeSezon}</p>
           </div>
         </div>
-        <Button type="submit" className="gap-2 bg-neutral-900 hover:bg-neutral-800 text-white">
-          <Save className="h-4 w-4" />
-          Kaydet
+        <Button 
+          type="submit" 
+          disabled={isSubmitting} 
+          className="gap-2 bg-neutral-900 hover:bg-neutral-800 text-white min-w-[120px]"
+        >
+          {isSubmitting ? (
+            <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
+          {initialData ? "Föyü Güncelle" : "Föyü Kaydet"}
         </Button>
       </div>
 
@@ -187,7 +208,7 @@ export function CekmeForm({ initialData, activeSezon, onSave, onCancel }: CekmeF
           <CardTitle className="text-sm font-bold text-neutral-800">Genel Bilgiler</CardTitle>
           <CardDescription className="text-xs">Model ve kumaş kodu gibi temel tanımlamalar.</CardDescription>
         </CardHeader>
-        <CardContent className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <CardContent className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <div className="space-y-2">
             <Label className="text-xs font-bold text-neutral-500 uppercase">Gön. Tarihi</Label>
             <Input type="date" value={formData.testeGonderilmeTarihi} onChange={(e) => handleInputChange("testeGonderilmeTarihi", e.target.value)} className="h-9 text-xs" />
@@ -211,15 +232,11 @@ export function CekmeForm({ initialData, activeSezon, onSave, onCancel }: CekmeF
           </div>
           <div className="space-y-2">
             <Label className="text-xs font-bold text-neutral-500 uppercase">Model Kodu</Label>
-            <Input value={formData.modelKodu} onChange={(e) => handleInputChange("modelKodu", e.target.value)} className="h-9 text-xs" />
+            <Input value={formData.modelKodu} onChange={(e) => handleInputChange("modelKodu", e.target.value)} className="h-9 text-xs font-semibold" />
           </div>
           <div className="space-y-2">
             <Label className="text-xs font-bold text-neutral-500 uppercase">SAP Kodu</Label>
-            <Input value={formData.sapKodu} onChange={(e) => handleInputChange("sapKodu", e.target.value)} className="h-9 text-xs" />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-bold text-neutral-500 uppercase text-blue-600">Kumaş Kodu</Label>
-            <Input value={formData.kumasKodu} onChange={(e) => handleInputChange("kumasKodu", e.target.value)} className="h-9 text-xs border-blue-200 focus-visible:ring-blue-400 bg-blue-50/30" />
+            <Input value={formData.sapKodu} onChange={(e) => handleInputChange("sapKodu", e.target.value)} className="h-9 text-xs font-semibold" />
           </div>
         </CardContent>
       </Card>
@@ -238,6 +255,10 @@ export function CekmeForm({ initialData, activeSezon, onSave, onCancel }: CekmeF
               )}
             </CardHeader>
             <CardContent className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold text-blue-600 uppercase">Kumaş Kodu</Label>
+                <Input value={fabric.kumasKodu || ""} onChange={(e) => handleFabricChange(index, "kumasKodu", e.target.value.toUpperCase())} className="h-8 text-xs bg-white font-semibold border-blue-200 focus-visible:ring-blue-400" placeholder="Örn: ME777" />
+              </div>
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold text-neutral-500 uppercase">Kullanıldığı Yer</Label>
                 <Input value={fabric.kullanildigiYer} onChange={(e) => handleFabricChange(index, "kullanildigiYer", e.target.value)} className="h-8 text-xs bg-white" placeholder="Örn: Ana Kumaş" />

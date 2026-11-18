@@ -1,6 +1,7 @@
 export interface CekmeKumasDetay {
   id: string
   kullanildigiYer: string
+  kumasKodu?: string
   kumasIcerik: string
   tedarikci: string
   artikelAdi: string

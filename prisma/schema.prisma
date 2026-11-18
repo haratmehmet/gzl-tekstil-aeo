@@ -63,6 +63,7 @@ model CekmeFabric {
   id          String    @id @default(uuid())
   cekmeFoyuId String
   kullanildigiYer String
+  kumasKodu       String    @default("")
   kumasIcerik     String
   tedarikci       String
   artikelAdi      String

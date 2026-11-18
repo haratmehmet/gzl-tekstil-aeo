@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Save, RotateCcw, FileSpreadsheet, FileText, AlertTriangle, Printer } from "lucide-react"
+import { Save, RotateCcw, FileSpreadsheet, FileText, AlertTriangle, Printer, PlusCircle, ChevronDown } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { syncKumasToKalanKumas } from "@/features/kalan-kumas/kalan-kumas-store"
 import { useKumasTakipStore } from "../useKumasTakipStore"
 import { NumericFormat } from "react-number-format"
@@ -56,6 +57,7 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
   // Form states initialized with initialData or defaults
   const [id, setId] = React.useState("")
   const [isSaving, setIsSaving] = React.useState(false)
+  const isSavingRef = React.useRef(false)
   const [kumasKodu, setKumasKodu] = React.useState("")
   const [kumasciFirma, setKumasciFirma] = React.useState("")
   const [geldigiTarih, setGeldigiTarih] = React.useState("")
@@ -118,6 +120,27 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
     setCekmeEn("")
     setCekmeBoy("")
     onNew()
+  }
+
+  // Aynı model koduna bağlı Astar veya Garnı föyü açma fonksiyonu
+  const handleAddRelatedFabric = (targetRole: "ASTAR" | "GARNİ") => {
+    if (!baglandigiModel) return
+
+    const todayStr = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD formatında günün tarihi
+
+    setId("") // Yeni kayıt ID'si alması için sıfırla
+    setGeldigiTarih(todayStr) // Eklediğimiz günün güncel tarihi
+    setKumasKodu("")
+    setKullanildigiYer(targetRole)
+    setTopAdedi(0)
+    setRolls([])
+    setKumasciFirma("")
+    setKumasIcerik("")
+    setKumasRenk("")
+    setKumasEn("")
+    setCekmeEn("")
+    setCekmeBoy("")
+    // baglandigiModel, sezon, etiket, sapKodu sabit kalır!
   }
 
   const handleSapKoduChange = (val: string) => {
@@ -192,7 +215,7 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
 
   const handleFormSave = async (e?: React.FormEvent, bypassDuplicateCheck = false) => {
     if (e) e.preventDefault()
-    if (!kumasKodu || isSaving) return
+    if (!kumasKodu || isSaving || isSavingRef.current) return
 
     const modelTrimmed = baglandigiModel?.trim().toLowerCase()
     const currentId = id || initialData?.id || ""
@@ -201,8 +224,6 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
     const existingRecord = currentId ? sheets.find(s => s.id === currentId) : null
 
     // 2. Bu kayıt zaten bu model için ANA KUMAŞ olarak mı kayıtlıydı?
-    // Eğer kullanıcı mevcut bir ANA KUMAŞ föyünü güncelliyorsa (metraj, top, çekme, not vb.),
-    // tekrar tekrar mükerrer uyarısı VERME.
     const wasAlreadyAnaKumasForThisModel = Boolean(
       (existingRecord &&
         existingRecord.baglandigiModel?.trim().toLowerCase() === modelTrimmed &&
@@ -229,52 +250,59 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
       }
     }
 
-    const isNew = !id;
-    const generatedId = id || Date.now().toString()
-    if (!id) {
-      setId(generatedId)
-    }
-
-    const sheetData: KumasTakipSheet = {
-      id: generatedId,
-      kumasKodu,
-      gelenMetraj,
-      kumasciFirma,
-      geldigiTarih,
-      sezon,
-      etiket,
-      sapKodu,
-      baglandigiModel,
-      kullanildigiYer,
-      birim,
-      topAdedi,
-      rolls,
-      kumasIcerik,
-      kumasRenk,
-      kumasEn,
-      cekmeEn,
-      cekmeBoy,
-    }
-    
-    // Senkronizasyon: Kalan Kumaş tablosuna sadece ilk kayıtta yansıt
-    if (isNew) {
-      syncKumasToKalanKumas({
-        faturaNo: "",
-        malzemeKodu: "",
-        faturaTarih: "",
-        birimFiyat: "",
-        depoyaGirisTarihi: geldigiTarih,
-        baglananModel: baglandigiModel,
-        kumasKodu,
-        kumasMetraji: `${gelenMetraj.toFixed(2).replace('.', ',')} ${birim === "MT" ? "Mt" : "Kg"}`,
-        takipFoyuId: sheetData.id
-      })
-    }
-
+    // Hemen kaydetme kilidi koy (üst üste çift tıklamayı engeller)
+    isSavingRef.current = true
     setIsSaving(true)
+
     try {
-      await onSave(sheetData)
+      const isNew = !currentId
+      const generatedId = currentId || Date.now().toString()
+
+      const sheetData: KumasTakipSheet = {
+        id: generatedId,
+        kumasKodu,
+        gelenMetraj,
+        kumasciFirma,
+        geldigiTarih,
+        sezon,
+        etiket,
+        sapKodu,
+        baglandigiModel,
+        kullanildigiYer,
+        birim,
+        topAdedi,
+        rolls,
+        kumasIcerik,
+        kumasRenk,
+        kumasEn,
+        cekmeEn,
+        cekmeBoy,
+      }
+      
+      // Senkronizasyon: Kalan Kumaş tablosuna sadece ilk kayıtta yansıt
+      if (isNew) {
+        syncKumasToKalanKumas({
+          faturaNo: "",
+          malzemeKodu: "",
+          faturaTarih: "",
+          birimFiyat: "",
+          depoyaGirisTarihi: geldigiTarih,
+          baglananModel: baglandigiModel,
+          kumasKodu,
+          kumasMetraji: `${gelenMetraj.toFixed(2).replace('.', ',')} ${birim === "MT" ? "Mt" : "Kg"}`,
+          takipFoyuId: sheetData.id
+        })
+      }
+
+      const savedResult = await onSave(sheetData)
+      // Sunucudan dönen gerçek ID'yi hemen form state'ine yaz (sonraki tıklamalar kesinlikle UPDATE/güncelleme yapar)
+      if (savedResult && savedResult.id) {
+        setId(savedResult.id)
+      } else if (!id) {
+        setId(generatedId)
+      }
     } finally {
+      isSavingRef.current = false
       setIsSaving(false)
     }
   }
@@ -903,6 +931,41 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
             <RotateCcw className="h-4 w-4" />
             Yeni Föy Oluştur
           </Button>
+
+          {baglandigiModel && (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className="flex items-center gap-1.5 text-xs font-bold border border-sky-300 bg-sky-50 text-sky-800 hover:bg-sky-100 h-9 px-3 rounded-xl shadow-sm transition-all cursor-pointer"
+                title="Bu modele bağlı Astar veya Garnı föyü oluştur"
+              >
+                <PlusCircle className="h-4 w-4 text-sky-600" />
+                <span>+ Modele Kumaş Ekle</span>
+                <ChevronDown className="h-3.5 w-3.5 opacity-60 ml-0.5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 bg-white border border-neutral-200 rounded-xl shadow-xl p-1.5 z-50">
+                <DropdownMenuItem 
+                  onClick={() => handleAddRelatedFabric("ASTAR")}
+                  className="cursor-pointer text-xs font-semibold py-2 px-3 rounded-lg hover:bg-orange-50 hover:text-orange-900 flex items-center transition-colors"
+                >
+                  <span className="w-2.5 h-2.5 rounded-full bg-orange-400 mr-2 shrink-0" />
+                  <div className="flex flex-col">
+                    <span>+ Astar Föyü Ekle</span>
+                    <span className="text-[10px] font-normal text-neutral-400">Model: {baglandigiModel}</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => handleAddRelatedFabric("GARNİ")}
+                  className="cursor-pointer text-xs font-semibold py-2 px-3 rounded-lg hover:bg-green-50 hover:text-green-900 flex items-center transition-colors"
+                >
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-500 mr-2 shrink-0" />
+                  <div className="flex flex-col">
+                    <span>+ Garnı Föyü Ekle</span>
+                    <span className="text-[10px] font-normal text-neutral-400">Model: {baglandigiModel}</span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
           <Button
             type="button"
