@@ -9,7 +9,7 @@ import { useKumasTakipStore } from "@/features/kumas-takip/useKumasTakipStore"
 import { CekmeList } from "@/features/cekme-tablosu/components/cekme-list"
 import { CekmeForm } from "@/features/cekme-tablosu/components/cekme-form"
 import { CekmeFoyu } from "@/features/cekme-tablosu/types"
-import { exportToExcel } from "@/features/cekme-tablosu/utils/export-excel"
+import { exportMultiTabToExcel } from "@/features/cekme-tablosu/utils/export-excel"
 
 export default function CekmeTablosuPage() {
   const { foyler, isLoaded: isCekmeLoaded, addFoy, updateFoy, deleteFoy } = useCekmeStore()
@@ -127,9 +127,51 @@ export default function CekmeTablosuPage() {
     setEditingFoy(null)
   }
 
-  const handleDownloadExcel = async () => {
+  const parseActiveFilter = (filter: string) => {
+    let sezon = filter
+    let group = "Academia & Beymen Collection"
+
+    if (filter.endsWith(" - Academia & Beymen Collection")) {
+      sezon = filter.replace(/ - Academia & Beymen Collection$/, "")
+      group = "Academia & Beymen Collection"
+    } else if (filter.endsWith(" - Beymen Club")) {
+      sezon = filter.replace(/ - Beymen Club$/, "")
+      group = "Beymen Club"
+    } else if (filter.endsWith(" - Academia Erkek")) {
+      sezon = filter.replace(/ - Academia Erkek$/, "")
+      group = "Academia Erkek"
+    }
+    return { sezon, group }
+  }
+
+  const { sezon: currentSezon, group: currentGroup } = React.useMemo(() => {
+    return parseActiveFilter(activeFilter)
+  }, [activeFilter])
+
+  const handleDownloadExcel = async (mode: "auto" | "single" = "auto") => {
     try {
-      await exportToExcel(filteredFoyler, activeFilter)
+      const { sezon, group } = parseActiveFilter(activeFilter)
+
+      if (group === "Academia Erkek" || mode === "single") {
+        // Academia Erkek ayrı excel olarak indirilir veya tek sekme istendiğinde
+        const sheetName = group === "Academia Erkek" ? "ACADEMIA ERKEK" : group === "Beymen Club" ? "BEYMEN CLUB" : "ACADEMIA - BEYMEN COLLECTION"
+        const fileName = `GZL_Cekme_Tablosu_${sezon}_${sheetName.replace(/[\s&/]+/g, "_")}.xlsx`
+        await exportMultiTabToExcel(
+          [{ sheetName, foyler: filteredFoyler }],
+          fileName
+        )
+      } else {
+        // ACADEMIA / BEYMEN COLLECTION ve BEYMEN CLUB aynı excelde alt sekmeler olarak indirilir
+        const academiaFoyler = foyler.filter(f => f.sezon === sezon && getEtiketGroup(f.etiket) === "Academia & Beymen Collection")
+        const beymenClubFoyler = foyler.filter(f => f.sezon === sezon && getEtiketGroup(f.etiket) === "Beymen Club")
+
+        const tabs = [
+          { sheetName: "ACADEMIA - BEYMEN COLLECTION", foyler: academiaFoyler },
+          { sheetName: "BEYMEN CLUB", foyler: beymenClubFoyler }
+        ]
+        const fileName = `GZL_Cekme_Tablosu_${sezon}_Academia_ve_BeymenClub.xlsx`
+        await exportMultiTabToExcel(tabs, fileName)
+      }
     } catch (error) {
       console.error("Excel dışa aktarma hatası:", error)
       alert("Excel dosyası oluşturulurken bir hata oluştu.")
@@ -189,10 +231,40 @@ export default function CekmeTablosuPage() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button onClick={handleDownloadExcel} variant="outline" className="gap-2 bg-white text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 border-emerald-200">
-              <Download className="h-4 w-4" />
-              Excel İndir
-            </Button>
+            {/* EXCEL DOWNLOAD SPLIT BUTTON */}
+            <div className="inline-flex rounded-md shadow-sm">
+              <Button 
+                onClick={() => handleDownloadExcel("auto")} 
+                variant="outline" 
+                className="gap-2 bg-white text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 border-emerald-200 rounded-r-none border-r-0 font-medium"
+                title={currentGroup !== "Academia Erkek" ? "Academia ve Beymen Club'ı aynı excelde alt sekmeler olarak indirir" : "Academia Erkek excelini indirir"}
+              >
+                <Download className="h-4 w-4" />
+                Excel İndir
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="allow-viewer inline-flex items-center justify-center px-2 bg-white text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 border border-emerald-200 rounded-r-md rounded-l-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64 allow-viewer">
+                  {currentGroup !== "Academia Erkek" ? (
+                    <>
+                      <DropdownMenuItem onClick={() => handleDownloadExcel("auto")} className="allow-viewer cursor-pointer font-bold text-emerald-700">
+                        2 Sekmeli İndir (Academia & Beymen Club)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDownloadExcel("single")} className="allow-viewer cursor-pointer text-xs text-neutral-600">
+                        Sadece Bu Sekmeyi İndir ({currentGroup})
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <DropdownMenuItem onClick={() => handleDownloadExcel("auto")} className="allow-viewer cursor-pointer font-bold text-emerald-700">
+                      Excel İndir (Academia Erkek)
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
             <Button onClick={handleCreateNew} className="gap-2 bg-neutral-900 hover:bg-neutral-800 text-white">
               <Plus className="h-4 w-4" />
               Yeni Kayıt

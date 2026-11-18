@@ -1,10 +1,14 @@
 import ExcelJS from "exceljs"
 import { CekmeFoyu } from "../types"
 
-export const exportToExcel = async (foyler: CekmeFoyu[], sezon: string) => {
-  const workbook = new ExcelJS.Workbook()
-  const sheet = workbook.addWorksheet(`Cekme_Tablosu_${sezon}`)
+export interface ExportTabConfig {
+  sheetName: string
+  foyler: CekmeFoyu[]
+}
 
+const slotRoles = ["ANA KUMAŞ", "ASTAR", "GARNİ"]
+
+export const populateSheet = (sheet: ExcelJS.Worksheet, foyler: CekmeFoyu[]) => {
   // Tanımlı renkler (ARGB formatında)
   const bgGray = "FFD9D9D9"
   const bgBlue = "FF9BC2E6"
@@ -71,10 +75,23 @@ export const exportToExcel = async (foyler: CekmeFoyu[], sezon: string) => {
     ]
 
     // Maksimum 3 kumaş
-    const slotRoles = ["ANA KUMAŞ", "ASTAR", "GARNİ"]
     for (let i = 0; i < 3; i++) {
       const targetRole = slotRoles[i]
-      const fab = foy.fabrics?.find(f => f.kullanildigiYer?.trim().toUpperCase() === targetRole) || foy.fabrics?.[i]
+      // Tam slot eşleşmesi
+      let fab = foy.fabrics?.find(f => f.kullanildigiYer?.trim().toUpperCase() === targetRole)
+      if (!fab && foy.fabrics) {
+        // Tam eşleşme yoksa o indeksteki kumaşa bak
+        const atIdx = foy.fabrics[i]
+        if (atIdx) {
+          const atIdxRole = atIdx.kullanildigiYer?.trim().toUpperCase()
+          const isOtherRole = slotRoles.includes(atIdxRole) && atIdxRole !== targetRole
+          if (!isOtherRole) fab = atIdx
+        }
+      }
+      if (!fab && i === 2 && foy.fabrics) {
+        fab = foy.fabrics.find(f => f.kullanildigiYer && !slotRoles.includes(f.kullanildigiYer.trim().toUpperCase()))
+      }
+
       if (fab && (fab.kullanildigiYer || fab.kumasKodu || fab.kumasIcerik)) {
         const fabricCode = fab.kumasKodu || (i === 0 ? foy.kumasKodu : "") || "-"
         rowValues.push(
@@ -104,7 +121,25 @@ export const exportToExcel = async (foyler: CekmeFoyu[], sezon: string) => {
       cell.border = {
         top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" }
       }
+      if (foy.renk === "red") {
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFFEE2E2" }
+        }
+      }
     })
+  })
+}
+
+export const exportMultiTabToExcel = async (tabs: ExportTabConfig[], fileName: string) => {
+  const workbook = new ExcelJS.Workbook()
+
+  tabs.forEach(tab => {
+    // Excel sheet name max 31 chars, no invalid chars : \ / ? * [ ]
+    const safeSheetName = tab.sheetName.replace(/[:\\/?*\[\]]/g, "-").slice(0, 31)
+    const sheet = workbook.addWorksheet(safeSheetName)
+    populateSheet(sheet, tab.foyler)
   })
 
   // Dosyayı oluştur ve indir
@@ -114,9 +149,13 @@ export const exportToExcel = async (foyler: CekmeFoyu[], sezon: string) => {
   
   const a = document.createElement("a")
   a.href = url
-  a.download = `GZL_Cekme_Tablosu_${sezon}.xlsx`
+  a.download = fileName.endsWith(".xlsx") ? fileName : `${fileName}.xlsx`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
+}
+
+export const exportToExcel = async (foyler: CekmeFoyu[], sezon: string) => {
+  return exportMultiTabToExcel([{ sheetName: `Cekme_Tablosu_${sezon}`.slice(0, 31), foyler }], `GZL_Cekme_Tablosu_${sezon}.xlsx`)
 }
