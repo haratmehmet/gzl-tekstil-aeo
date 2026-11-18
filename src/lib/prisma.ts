@@ -1,7 +1,16 @@
 import { PrismaClient } from '@prisma/client'
 
+const localDbUrl = "postgresql://postgres:postgres@localhost:5433/gzlaeo_db?schema=public"
+
 const prismaClientSingleton = () => {
-  return new PrismaClient()
+  const dbUrl = process.env.DATABASE_URL || localDbUrl
+  return new PrismaClient({
+    datasources: {
+      db: {
+        url: dbUrl,
+      },
+    },
+  })
 }
 
 declare const globalThis: {

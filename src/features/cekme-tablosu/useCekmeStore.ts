@@ -8,9 +8,15 @@ export function useCekmeStore() {
   const fetchFoyler = async () => {
     try {
       const res = await fetch("/api/cekme-tablosu")
-      if (!res.ok) throw new Error("Failed to fetch")
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null)
+        console.error("Fetch error /api/cekme-tablosu:", errorData?.error || res.statusText)
+        return
+      }
       const data = await res.json()
-      setFoyler(data)
+      if (Array.isArray(data)) {
+        setFoyler(data)
+      }
     } catch (error) {
       console.error("Fetch error:", error)
     } finally {
