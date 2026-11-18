@@ -11,6 +11,23 @@ import { CekmeForm } from "@/features/cekme-tablosu/components/cekme-form"
 import { CekmeFoyu } from "@/features/cekme-tablosu/types"
 import { exportMultiTabToExcel } from "@/features/cekme-tablosu/utils/export-excel"
 
+const parseActiveFilter = (filter: string) => {
+  let sezon = filter
+  let group = "Academia & Beymen Collection"
+
+  if (filter.endsWith(" - Academia & Beymen Collection")) {
+    sezon = filter.replace(/ - Academia & Beymen Collection$/, "")
+    group = "Academia & Beymen Collection"
+  } else if (filter.endsWith(" - Beymen Club")) {
+    sezon = filter.replace(/ - Beymen Club$/, "")
+    group = "Beymen Club"
+  } else if (filter.endsWith(" - Academia Erkek")) {
+    sezon = filter.replace(/ - Academia Erkek$/, "")
+    group = "Academia Erkek"
+  }
+  return { sezon, group }
+}
+
 export default function CekmeTablosuPage() {
   const { foyler, isLoaded: isCekmeLoaded, addFoy, updateFoy, deleteFoy } = useCekmeStore()
   const { sheets: takipSheets, isLoaded: isTakipLoaded } = useKumasTakipStore()
@@ -54,6 +71,10 @@ export default function CekmeTablosuPage() {
     if (filters.size === 0) return ["Kayıt Yok"]
     return Array.from(filters).sort()
   }, [foyler, takipSheets])
+
+  const { sezon: currentSezon, group: currentGroup } = React.useMemo(() => {
+    return parseActiveFilter(activeFilter)
+  }, [activeFilter])
 
   // Load from localStorage on mount
   React.useEffect(() => {
@@ -126,27 +147,6 @@ export default function CekmeTablosuPage() {
     setIsEditing(false)
     setEditingFoy(null)
   }
-
-  const parseActiveFilter = (filter: string) => {
-    let sezon = filter
-    let group = "Academia & Beymen Collection"
-
-    if (filter.endsWith(" - Academia & Beymen Collection")) {
-      sezon = filter.replace(/ - Academia & Beymen Collection$/, "")
-      group = "Academia & Beymen Collection"
-    } else if (filter.endsWith(" - Beymen Club")) {
-      sezon = filter.replace(/ - Beymen Club$/, "")
-      group = "Beymen Club"
-    } else if (filter.endsWith(" - Academia Erkek")) {
-      sezon = filter.replace(/ - Academia Erkek$/, "")
-      group = "Academia Erkek"
-    }
-    return { sezon, group }
-  }
-
-  const { sezon: currentSezon, group: currentGroup } = React.useMemo(() => {
-    return parseActiveFilter(activeFilter)
-  }, [activeFilter])
 
   const handleDownloadExcel = async (mode: "auto" | "single" = "auto") => {
     try {
