@@ -141,11 +141,47 @@ export function useKumasDeposu() {
     }
   }
 
+  const addManualRecord = async (data: Partial<KumasDeposuRecord>): Promise<KumasDeposuRecord | null> => {
+    try {
+      const newRecord = {
+        tarih: data.tarih || new Date().toLocaleDateString('tr-TR'),
+        renk: data.renk || "",
+        firma: data.firma || "",
+        sezon: data.sezon || "",
+        kumasKodu: data.kumasKodu || "",
+        gelenMetraj: data.gelenMetraj || "",
+        kesimTarihi: data.kesimTarihi || "",
+        baglananModel: data.baglananModel || "",
+        kesilenAdet: data.kesilenAdet || "",
+        aciklama: data.aciklama || "",
+        harcananMetraj: data.harcananMetraj || "",
+        netMetraj: data.netMetraj || data.gelenMetraj || "",
+        takipFoyuId: null,
+        parentId: null
+      }
+
+      const res = await fetch("/api/kumas-deposu", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newRecord)
+      })
+
+      if (!res.ok) throw new Error("Manuel depo kaydı eklenemedi")
+      const saved = await res.json()
+      setRecords(prev => [...prev, saved])
+      return saved
+    } catch (error) {
+      console.error("Add manual record error:", error)
+      return null
+    }
+  }
+
   return {
     records,
     isLoaded,
     updateRecord,
     deleteRecord,
     addEmptyRecord,
+    addManualRecord,
   }
 }

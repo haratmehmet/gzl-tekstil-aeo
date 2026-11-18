@@ -4,14 +4,15 @@ import React from "react"
 import { useKumasDeposu, KumasDeposuRecord } from "../kumas-deposu-store"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Download, AlertTriangle, Trash2 } from "lucide-react"
+import { Download, AlertTriangle, Trash2, Plus } from "lucide-react"
 import { exportToExcel } from "../utils/export-excel"
 
 interface KumasDeposuListProps {
   onEdit: (record: KumasDeposuRecord) => void
+  onAddNew: () => void
 }
 
-export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
+export function KumasDeposuList({ onEdit, onAddNew }: KumasDeposuListProps) {
   const { records, isLoaded, deleteRecord } = useKumasDeposu()
   const [deleteConfirmId, setDeleteConfirmId] = React.useState<string | null>(null)
 
@@ -31,11 +32,20 @@ export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
   return (
     <div className="space-y-4">
       {/* ACTION BUTTONS */}
-      <div className="flex justify-end gap-3 print:hidden">
-        <Button onClick={handleDownloadExcel} variant="outline" className="gap-2 bg-white text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 border-emerald-200">
-          <Download className="h-4 w-4" />
-          Excel İndir
-        </Button>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 print:hidden">
+        <div className="text-xs text-neutral-500 font-medium">
+          Toplam <span className="font-bold text-neutral-800">{Array.isArray(records) ? records.length : 0}</span> kumaş kaydı
+        </div>
+        <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+          <Button onClick={handleDownloadExcel} variant="outline" className="gap-2 bg-white text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 border-emerald-200">
+            <Download className="h-4 w-4" />
+            Excel İndir
+          </Button>
+          <Button onClick={onAddNew} className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm font-semibold">
+            <Plus className="h-4 w-4" />
+            + Manuel Depo Kaydı Ekle
+          </Button>
+        </div>
       </div>
 
       {/* YELLOW HEADER */}
@@ -128,8 +138,15 @@ export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
 
               {(!Array.isArray(records) || records.length === 0) && (
                 <tr>
-                  <td colSpan={13} className="text-center py-8 text-neutral-400 font-normal">
-                    Henüz depo kaydı bulunmuyor. Kumaş Takip sayfasından föy kaydettiğinizde buraya otomatik düşecektir.
+                  <td colSpan={13} className="text-center py-12 text-neutral-400 font-normal">
+                    <p className="font-medium text-neutral-700 mb-1 text-sm">Henüz depo kaydı bulunmuyor.</p>
+                    <p className="text-xs text-neutral-500 mb-4">
+                      Kumaş Takip sayfasından föy kaydettiğinizde buraya otomatik düşer ya da var olan depo bilgilerinizi manuel ekleyebilirsiniz.
+                    </p>
+                    <Button onClick={onAddNew} size="sm" className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white">
+                      <Plus className="h-4 w-4" />
+                      İlk Depo Kaydını Ekle
+                    </Button>
                   </td>
                 </tr>
               )}
@@ -203,8 +220,15 @@ export function KumasDeposuList({ onEdit }: KumasDeposuListProps) {
           })}
 
           {(!Array.isArray(records) || records.length === 0) && (
-            <div className="text-center py-8 text-neutral-400 text-sm">
-              Henüz depo kaydı bulunmuyor.
+            <div className="text-center py-12 text-neutral-400 text-sm">
+              <p className="font-medium text-neutral-700 mb-1">Henüz depo kaydı bulunmuyor.</p>
+              <p className="text-xs text-neutral-500 mb-4">
+                Var olan depo kumaş bilgilerinizi manuel olarak ekleyebilirsiniz.
+              </p>
+              <Button onClick={onAddNew} size="sm" className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white">
+                <Plus className="h-4 w-4" />
+                Manuel Kayıt Ekle
+              </Button>
             </div>
           )}
         </div>

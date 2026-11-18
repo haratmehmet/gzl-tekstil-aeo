@@ -23,7 +23,20 @@ export async function POST(request: Request) {
 
     const newRecord = await prisma.kumasDeposu.create({
       data: {
-        ...data,
+        tarih: data.tarih ?? "",
+        renk: data.renk ?? "",
+        firma: data.firma ?? "",
+        sezon: data.sezon ?? "",
+        kumasKodu: data.kumasKodu ?? "",
+        gelenMetraj: data.gelenMetraj ?? "",
+        kesimTarihi: data.kesimTarihi ?? "",
+        baglananModel: data.baglananModel ?? "",
+        kesilenAdet: data.kesilenAdet ?? "",
+        aciklama: data.aciklama ?? "",
+        harcananMetraj: data.harcananMetraj ?? "",
+        netMetraj: data.netMetraj ?? data.gelenMetraj ?? "",
+        takipFoyuId: data.takipFoyuId ?? null,
+        parentId: data.parentId ?? null,
       },
     })
 
