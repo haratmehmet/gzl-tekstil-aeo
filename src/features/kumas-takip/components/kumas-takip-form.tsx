@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Save, RotateCcw, FileSpreadsheet, FileText, AlertTriangle, Printer, PlusCircle, ChevronDown } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { syncKumasToKalanKumas } from "@/features/kalan-kumas/kalan-kumas-store"
 import { useKumasTakipStore } from "../useKumasTakipStore"
 import { NumericFormat } from "react-number-format"
 
@@ -58,6 +57,7 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
   const [id, setId] = React.useState("")
   const [isSaving, setIsSaving] = React.useState(false)
   const isSavingRef = React.useRef(false)
+  const isAddingRelatedRef = React.useRef(false)
   const [kumasKodu, setKumasKodu] = React.useState("")
   const [kumasciFirma, setKumasciFirma] = React.useState("")
   const [geldigiTarih, setGeldigiTarih] = React.useState("")
@@ -98,7 +98,12 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
       setCekmeEn(initialData.cekmeEn || "")
       setCekmeBoy(initialData.cekmeBoy || "")
     } else {
-      handleReset()
+      if (isAddingRelatedRef.current) {
+        // "+ Modele Kumaş Ekle" tıklandığında parent'tan tetiklenen onNew() modeli sıfırlamasın!
+        isAddingRelatedRef.current = false
+      } else {
+        handleReset()
+      }
     }
   }, [initialData])
 
@@ -122,26 +127,49 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
     onNew()
   }
 
-  // Aynı model koduna bağlı Astar veya Garnı föyü açma fonksiyonu
-  const handleAddRelatedFabric = (targetRole: "ASTAR" | "GARNİ") => {
+  // Aynı model koduna bağlı Ana Kumaş, Astar veya Garnı föyü açma fonksiyonu
+  const handleAddRelatedFabric = (targetRole: "ANA KUMAŞ" | "ASTAR" | "GARNİ") => {
     if (!baglandigiModel) return
 
+    isAddingRelatedRef.current = true
     const todayStr = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD formatında günün tarihi
 
     setId("") // Yeni kayıt ID'si alması için sıfırla
     setGeldigiTarih(todayStr) // Eklediğimiz günün güncel tarihi
-    setKumasKodu("")
     setKullanildigiYer(targetRole)
+    setKumasKodu("")
     setTopAdedi(0)
     setRolls([])
-    setKumasciFirma("")
     setKumasIcerik("")
-    setKumasRenk("")
-    setKumasEn("")
     setCekmeEn("")
     setCekmeBoy("")
-    // baglandigiModel, sezon, etiket, sapKodu sabit kalır!
+    setKumasEn("")
+    // baglandigiModel, sezon, etiket, sapKodu, kumasciFirma, kumasRenk sabit kalır ve aktarılır!
+
+    onNew()
   }
+
+  // Bu modele ait daha önce eklenmiş kumaş türlerini bul (ANA KUMAŞ, ASTAR, GARNİ)
+  const availableRolesToAdd = React.useMemo(() => {
+    if (!baglandigiModel) return []
+    const cleanModel = baglandigiModel.trim().toLowerCase()
+    
+    // Model koduna ait sistemdeki kayıtlı diğer föylerdeki rolleri topla
+    const existingRoles = new Set<string>()
+    sheets.forEach((s) => {
+      if (s.baglandigiModel?.trim().toLowerCase() === cleanModel && s.kullanildigiYer) {
+        existingRoles.add(s.kullanildigiYer.trim().toUpperCase())
+      }
+    })
+
+    // Şu anda ekranda açık olan föyün rolünü de mevcut roller arasına ekle
+    if (kullanildigiYer) {
+      existingRoles.add(kullanildigiYer.trim().toUpperCase())
+    }
+
+    const ALL_ROLES: ("ANA KUMAŞ" | "ASTAR" | "GARNİ")[] = ["ANA KUMAŞ", "ASTAR", "GARNİ"]
+    return ALL_ROLES.filter((role) => !existingRoles.has(role))
+  }, [baglandigiModel, sheets, kullanildigiYer])
 
   const handleSapKoduChange = (val: string) => {
     const cleaned = val.replace(/\D/g, "").slice(0, 9)
@@ -276,21 +304,6 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
         cekmeBoy,
       }
       
-      // Senkronizasyon: Kalan Kumaş tablosuna sadece ilk kayıtta yansıt
-      if (isNew) {
-        syncKumasToKalanKumas({
-          faturaNo: "",
-          malzemeKodu: "",
-          faturaTarih: "",
-          birimFiyat: "",
-          depoyaGirisTarihi: geldigiTarih,
-          baglananModel: baglandigiModel,
-          kumasKodu,
-          kumasMetraji: `${gelenMetraj.toFixed(2).replace('.', ',')} ${birim === "MT" ? "Mt" : "Kg"}`,
-          takipFoyuId: sheetData.id
-        })
-      }
-
       const savedResult = await onSave(sheetData)
       // Sunucudan dönen gerçek ID'yi hemen form state'ine yaz (sonraki tıklamalar kesinlikle UPDATE/güncelleme yapar)
       if (savedResult && savedResult.id) {
@@ -933,33 +946,55 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
             <DropdownMenu>
               <DropdownMenuTrigger
                 className="flex items-center gap-1.5 text-xs font-bold border border-sky-300 bg-sky-50 text-sky-800 hover:bg-sky-100 h-9 px-3 rounded-xl shadow-sm transition-all cursor-pointer"
-                title="Bu modele bağlı Astar veya Garnı föyü oluştur"
+                title="Bu modele bağlı Ana Kumaş, Astar veya Garnı föyü oluştur"
               >
                 <PlusCircle className="h-4 w-4 text-sky-600" />
                 <span>+ Modele Kumaş Ekle</span>
                 <ChevronDown className="h-3.5 w-3.5 opacity-60 ml-0.5" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56 bg-white border border-neutral-200 rounded-xl shadow-xl p-1.5 z-50">
-                <DropdownMenuItem 
-                  onClick={() => handleAddRelatedFabric("ASTAR")}
-                  className="cursor-pointer text-xs font-semibold py-2 px-3 rounded-lg hover:bg-orange-50 hover:text-orange-900 flex items-center transition-colors"
-                >
-                  <span className="w-2.5 h-2.5 rounded-full bg-orange-400 mr-2 shrink-0" />
-                  <div className="flex flex-col">
-                    <span>+ Astar Föyü Ekle</span>
-                    <span className="text-[10px] font-normal text-neutral-400">Model: {baglandigiModel}</span>
+              <DropdownMenuContent align="start" className="w-60 bg-white border border-neutral-200 rounded-xl shadow-xl p-1.5 z-50">
+                {availableRolesToAdd.length > 0 ? (
+                  availableRolesToAdd.map((role) => {
+                    const roleConfig = {
+                      "ANA KUMAŞ": {
+                        title: "+ Ana Kumaş Föyü Ekle",
+                        dotColor: "bg-blue-500",
+                        hoverBg: "hover:bg-blue-50 hover:text-blue-900",
+                      },
+                      "ASTAR": {
+                        title: "+ Astar Föyü Ekle",
+                        dotColor: "bg-orange-400",
+                        hoverBg: "hover:bg-orange-50 hover:text-orange-900",
+                      },
+                      "GARNİ": {
+                        title: "+ Garnı Föyü Ekle",
+                        dotColor: "bg-purple-500",
+                        hoverBg: "hover:bg-purple-50 hover:text-purple-900",
+                      },
+                    }[role]
+
+                    return (
+                      <DropdownMenuItem 
+                        key={role}
+                        onClick={() => handleAddRelatedFabric(role)}
+                        className={`cursor-pointer text-xs font-semibold py-2 px-3 rounded-lg ${roleConfig.hoverBg} flex items-center transition-colors`}
+                      >
+                        <span className={`w-2.5 h-2.5 rounded-full ${roleConfig.dotColor} mr-2 shrink-0`} />
+                        <div className="flex flex-col">
+                          <span>{roleConfig.title}</span>
+                          <span className="text-[10px] font-normal text-neutral-400">Model: {baglandigiModel}</span>
+                        </div>
+                      </DropdownMenuItem>
+                    )
+                  })
+                ) : (
+                  <div className="py-2.5 px-3 text-center select-none">
+                    <p className="text-[11px] font-bold text-neutral-700">Tüm Kumaşlar Ekli</p>
+                    <p className="text-[10px] text-neutral-400 mt-0.5 leading-snug">
+                      Bu modelin Ana Kumaş, Astar ve Garnı föyleri zaten mevcut.
+                    </p>
                   </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleAddRelatedFabric("GARNİ")}
-                  className="cursor-pointer text-xs font-semibold py-2 px-3 rounded-lg hover:bg-green-50 hover:text-green-900 flex items-center transition-colors"
-                >
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-500 mr-2 shrink-0" />
-                  <div className="flex flex-col">
-                    <span>+ Garnı Föyü Ekle</span>
-                    <span className="text-[10px] font-normal text-neutral-400">Model: {baglandigiModel}</span>
-                  </div>
-                </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}

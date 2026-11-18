@@ -56,7 +56,8 @@ export async function POST(request: Request) {
         data: {
           kumasKodu: newRecord.kumasKodu || "",
           depoyaGirisTarihi: newRecord.geldigiTarih || "",
-          kumasMetraji: formattedAmount
+          kumasMetraji: formattedAmount,
+          baglananModel: newRecord.baglandigiModel || ""
         }
       })
     } else {
@@ -68,6 +69,7 @@ export async function POST(request: Request) {
           depoyaGirisTarihi: newRecord.geldigiTarih || "",
           kumasKodu: newRecord.kumasKodu || "",
           kumasMetraji: formattedAmount,
+          baglananModel: newRecord.baglandigiModel || "",
           takipFoyuId: newRecord.id
         }
       })
@@ -165,7 +167,8 @@ export async function PUT(request: Request) {
         data: {
           kumasKodu: updatedRecord.kumasKodu || "",
           depoyaGirisTarihi: updatedRecord.geldigiTarih || "",
-          kumasMetraji: formattedAmount
+          kumasMetraji: formattedAmount,
+          baglananModel: updatedRecord.baglandigiModel || ""
         }
       })
     } else {
@@ -177,6 +180,7 @@ export async function PUT(request: Request) {
           depoyaGirisTarihi: updatedRecord.geldigiTarih || "",
           kumasKodu: updatedRecord.kumasKodu || "",
           kumasMetraji: formattedAmount,
+          baglananModel: updatedRecord.baglandigiModel || "",
           takipFoyuId: updatedRecord.id
         }
       })
@@ -244,9 +248,11 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 })
     }
 
-    await prisma.kumasTakip.delete({
-      where: { id },
-    })
+    await prisma.$transaction([
+      prisma.kalanKumas.deleteMany({ where: { takipFoyuId: id } }),
+      prisma.kumasDeposu.deleteMany({ where: { takipFoyuId: id } }),
+      prisma.kumasTakip.delete({ where: { id } }),
+    ])
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
