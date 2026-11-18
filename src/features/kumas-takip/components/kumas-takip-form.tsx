@@ -218,20 +218,17 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
     if (!kumasKodu || isSaving || isSavingRef.current) return
 
     const modelTrimmed = baglandigiModel?.trim().toLowerCase()
-    const currentId = id || initialData?.id || ""
+    const currentId = id // Kesinlikle local id state'ini kullan, yeni moddaysa (id === "") initialData'ya düşme!
 
     // 1. Veritabanındaki veya listedeki mevcut kaydı bul
     const existingRecord = currentId ? sheets.find(s => s.id === currentId) : null
 
     // 2. Bu kayıt zaten bu model için ANA KUMAŞ olarak mı kayıtlıydı?
     const wasAlreadyAnaKumasForThisModel = Boolean(
-      (existingRecord &&
-        existingRecord.baglandigiModel?.trim().toLowerCase() === modelTrimmed &&
-        existingRecord.kullanildigiYer === "ANA KUMAŞ") ||
-      (initialData?.id &&
-        initialData.id === currentId &&
-        initialData.baglandigiModel?.trim().toLowerCase() === modelTrimmed &&
-        initialData.kullanildigiYer === "ANA KUMAŞ")
+      currentId &&
+      existingRecord &&
+      existingRecord.baglandigiModel?.trim().toLowerCase() === modelTrimmed &&
+      existingRecord.kullanildigiYer === "ANA KUMAŞ"
     )
 
     // 3. Yalnızca yeni bir ANA KUMAŞ eklenirken ya da kayıt farklı bir modele/ana kumaşa dönüştürülürken mükerrer uyarısı ver
@@ -256,7 +253,7 @@ export function KumasTakipForm({ initialData, onSave, onNew, sheets: passedSheet
 
     try {
       const isNew = !currentId
-      const generatedId = currentId || Date.now().toString()
+      const generatedId = currentId || ""
 
       const sheetData: KumasTakipSheet = {
         id: generatedId,
